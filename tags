@@ -1,0 +1,68 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BISHOP	piece.h	7;"	d
+BLUE	board.h	7;"	d
+BOARD	board.h	2;"	d
+BOARD_CORN	board.c	13;"	d	file:
+BOARD_HOR	board.c	11;"	d	file:
+BOARD_LENGTH	board.c	6;"	d	file:
+BOARD_VERT	board.c	12;"	d	file:
+BOARD_WIDTH	board.c	7;"	d	file:
+CYAN	board.h	9;"	d
+DISPLAY_X	board.c	8;"	d	file:
+DISPLAY_Y	board.c	9;"	d	file:
+GREEN	board.h	5;"	d
+KING	piece.h	9;"	d
+KNIGHT	piece.h	6;"	d
+MAGENTA	board.h	8;"	d
+PAWN	piece.h	4;"	d
+PIECE	piece.h	2;"	d
+QUEEN	piece.h	8;"	d
+RED	board.h	4;"	d
+RESET	board.h	10;"	d
+RITCSFIGURES_DISPLAY_H	display.h	33;"	d
+ROOK	piece.h	5;"	d
+YELLOW	board.h	6;"	d
+active	piece.h	/^	int active;$/;"	m	struct:piece
+addMove	piece.c	/^int addMove(struct board * b , struct piece *p, int x , int y , int opp )$/;"	f
+addMoves	piece.c	/^int addMoves(struct board * b, struct piece *p, int x , int y, int opp)$/;"	f
+addPiece	piece.c	/^int addPiece(struct board *b, char p, int x, int y, int player)$/;"	f
+board	board.h	/^struct board$/;"	s
+board	board.h	/^}board;$/;"	v	typeref:struct:board
+checkSpace	board.c	/^int checkSpace(struct board * b, int x , int y)$/;"	f
+clear	display.c	/^void clear() {$/;"	f
+clearMoves	piece.c	/^int clearMoves(struct piece * p)$/;"	f
+covered	piece.h	/^	int covered;$/;"	m	struct:piece
+drawBoard	board.c	/^int drawBoard(struct board *b)$/;"	f
+equalPos	piece.c	/^int equalPos(struct pos * pos1, struct pos * pos2)$/;"	f
+getSpace	board.c	/^struct piece * getSpace(struct board * b, int x , int y)$/;"	f
+incheckCheck	piece.c	/^int incheckCheck(struct board * b, struct piece * p, struct pos * m)$/;"	f
+initBoard	board.c	/^int initBoard(struct board *b)$/;"	f
+loc	piece.h	/^	struct pos *loc;$/;"	m	struct:piece	typeref:struct:piece::pos
+main	board.c	/^int main(int argc, char * argv[])$/;"	f
+movePiece	board.c	/^int movePiece(struct board * b, struct piece * p, struct pos * move)$/;"	f
+moves	piece.h	/^	struct pos * moves[64];$/;"	m	struct:piece	typeref:struct:piece::pos
+p	piece.h	/^	char p;$/;"	m	struct:piece
+piece	piece.h	/^struct piece$/;"	s
+piece	piece.h	/^}piece;$/;"	v	typeref:struct:piece
+pieces	board.h	/^	struct piece *pieces[32];$/;"	m	struct:board	typeref:struct:board::piece
+player	piece.h	/^	int player;$/;"	m	struct:piece
+pos	piece.h	/^struct pos$/;"	s
+pos	piece.h	/^}pos;$/;"	v	typeref:struct:pos
+printMoves	piece.c	/^int printMoves(struct piece *p)$/;"	f
+put	display.c	/^void put( char character ) {$/;"	f
+removeMove	piece.c	/^int removeMove(struct piece *p, int pos)$/;"	f
+removePiece	piece.c	/^int removePiece(struct board * b, struct piece *p)$/;"	f
+s_moves	piece.h	/^	int s_moves;$/;"	m	struct:piece
+s_pieces	board.h	/^	int s_pieces;$/;"	m	struct:board
+set_cur_pos	display.c	/^void set_cur_pos( int rCursor, int cCursor) {$/;"	f
+specialKingMoveCheck	piece.c	/^int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)$/;"	f
+type	piece.h	/^	int type;$/;"	m	struct:pos
+updateAllMoves	board.c	/^int updateAllMoves(struct board * b)$/;"	f
+updateMoves	piece.c	/^int updateMoves(struct board *b ,struct piece *p)$/;"	f
+x	piece.h	/^	int x,y;$/;"	m	struct:pos
+y	piece.h	/^	int x,y;$/;"	m	struct:pos

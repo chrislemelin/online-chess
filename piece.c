@@ -42,12 +42,15 @@ int removePiece(struct board * b, struct piece *p)
 
 int removeMove(struct piece *p, int pos)
 {
+	/*
 	free(p->moves[pos]);
 	for(int c = pos+1; c< p->s_moves;c++)
 	{
 		p->moves[c-1] = p->moves[c];
 	}
 	p->s_moves--;
+	*/
+	p->moves[pos]->type = 3;
 }
 
 
@@ -209,7 +212,6 @@ int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)
 			if(incheckCheck(b,k1,k1->moves[z]) == 1)
 			{
 				removeMove(k1,z);
-				z--;
 			}
 		}
 	}
@@ -221,7 +223,7 @@ int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)
 			if(incheckCheck(b,k2,k2->moves[z]) == 1)
 			{
 				removeMove(k2,z);
-				z--;
+
 			}
 		}
 	}
@@ -244,6 +246,8 @@ int incheckCheck(struct board * b, struct piece * p, struct pos * m)
 
 		for(int c = 0; c<b->pieces[x]->s_moves;c++)
 		{
+			if(b->pieces[x]->moves[c]->type == 3)
+				continue;
 			if(equalPos(m, b->pieces[x]->moves[c]) == 1 )
 			{
 				if(b->pieces[x]->p == KING)
@@ -269,7 +273,7 @@ int printMoves(struct piece *p)
 	printf(RESET);
 	for(int a = 0 ; a < p->s_moves;a++)
 	{
-		printf("(%d,%d) ", p->moves[a]->x, p->moves[a]->y);
+		printf("type :%d (%d,%d) ",p->moves[a]->type, p->moves[a]->x, p->moves[a]->y);
 	}
 	printf("\n");
 }

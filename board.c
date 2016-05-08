@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
 	updateAllMoves(boardy);
 
 	set_cur_pos(5,1);
-	printMoves(boardy->pieces[0]);
+	prntMoves(boardy->pieces[0]);
 	printMoves(boardy->pieces[1]);
 	drawBoard(boardy);
 
@@ -207,7 +207,7 @@ int updateAllMoves(struct board * b)
 	{
 		updateMoves(b,k2);
 	}
-	specialKingMoveCheck(b,k1,k2);
+	//specialKingMoveCheck(b,k1,k2);
 
 }
 
@@ -216,8 +216,13 @@ int movePiece(struct board * b, struct piece * p, struct pos * move)
 	if(move->type == 2 || move->type == 3)
 		return 0;
 
-
-
+	if(move->type == 1)
+	{
+		struct piece * deadPiece = getSpace(b,move->x,move->y);
+		removePiece(b,deadPiece);
+	}
+		free(p->loc);
+		p->loc = move;
 }
 
 /*
