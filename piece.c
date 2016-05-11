@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "display.h"
 #include "piece.h"
 #include "board.h"
 
+
 int addPiece(struct board *b, char p, int x, int y, int player)
 {
 	struct piece *thingy = malloc(sizeof(struct piece));
-	struct pos *loc = malloc(sizeof(struct pos));
+	struct pos *loc = makeLoc(x,y);
 	thingy->s_moves = 0;
-	loc->x = x;
-	loc->y = y;
 	thingy->loc = loc;
 	thingy->p = p;
 	thingy->player = player;
@@ -18,6 +18,19 @@ int addPiece(struct board *b, char p, int x, int y, int player)
 	b->pieces[b->s_pieces] = thingy;
 	b->s_pieces++;
 }
+
+int addPieceC(struct board *b, struct piece * p)
+{
+	struct piece *thingy = malloc(sizeof(struct piece));
+	struct pos *loc =  makeLoc(p->loc->x, p->loc->y);
+	thingy->s_moves = 0;
+	thingy->p = p->p;
+	thingy->player = p->player;
+	thingy->active = 1;
+	b->pieces[b->s_pieces] = thingy;
+	b->s_pieces++;
+}
+
 
 /*@author
 */
@@ -28,7 +41,8 @@ int removePiece(struct board * b, struct piece *p)
 		if(b->pieces[a] == p)
 		{
 			clearMoves(p);
-			free(b->pieces[a]);
+			free(p->loc);
+			free(p);
 			for(int c = a+1; c< b->s_pieces;c++)
 			{
 				b->pieces[c-1] = b->pieces[c];
@@ -63,9 +77,7 @@ int addMove(struct board * b , struct piece *p, int x , int y , int opp )
 
 	if(-1 == check)
 	{
-		struct pos *m = malloc(sizeof(struct pos));
-		m->x = x;
-		m->y = y;
+		struct pos *m = makeLoc(x,y);
 		m->type = 0;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
@@ -73,18 +85,14 @@ int addMove(struct board * b , struct piece *p, int x , int y , int opp )
 
 	else if(opp == check)
 	{
-		struct pos *m = malloc(sizeof(struct pos));
-		m->x = x;
-		m->y = y;
+		struct pos *m = makeLoc(x,y);
 		m->type = 1;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
 	}
 	else if(p->player == check)
 	{
-		struct pos *m = malloc(sizeof(struct pos));
-		m->x = x;
-		m->y = y;
+		struct pos *m = makeLoc(x,y);
 		m->type = 2;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
@@ -159,7 +167,6 @@ int updateMoves(struct board *b ,struct piece *p)
 		addMoves(b,p,0,-1,opp);
 
 	}
-
 	if(p->p == KNIGHT)
 	{
 		addMove(b,p,p->loc->x+1,p->loc->y+2,opp);
@@ -172,7 +179,6 @@ int updateMoves(struct board *b ,struct piece *p)
 		addMove(b,p,p->loc->x-2,p->loc->y+1,opp);
 		addMove(b,p,p->loc->x-2,p->loc->y-1,opp);
 	}
-
 	if(p->p == BISHOP)
 	{
 		addMoves(b,p,1,1,opp);
@@ -202,7 +208,6 @@ int updateMoves(struct board *b ,struct piece *p)
 	return p->s_moves;
 
 }
-
 int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)
 {
 	if (k1 != NULL)
@@ -215,7 +220,6 @@ int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)
 			}
 		}
 	}
-
 	if (k2 != NULL)
 	{
 		for(int z = 0 ; z<k2->s_moves; z++)
@@ -223,7 +227,6 @@ int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)
 			if(incheckCheck(b,k2,k2->moves[z]) == 1)
 			{
 				removeMove(k2,z);
-
 			}
 		}
 	}
@@ -232,9 +235,11 @@ int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2)
 
 }
 
-/* return 0 if not in check
+/*
+ * return 0 if not in check
  * return 1 if in check
  * return 2 if in check by a king, special case
+ *
  */
 int incheckCheck(struct board * b, struct piece * p, struct pos * m)
 {
@@ -260,9 +265,6 @@ int incheckCheck(struct board * b, struct piece * p, struct pos * m)
 	return toReturn;
 }
 
-
-
-
 int printMoves(struct piece *p)
 {
 	if(p->player == 0)
@@ -286,4 +288,14 @@ int equalPos(struct pos * pos1, struct pos * pos2)
 		return 1;
 	else
 		return 0;
+}
+
+struct pos * makeLoc(int x, int y)
+{
+	struct pos * l = malloc(sizeof(struct pos));
+	int xnew = x;
+	int ynew = y;
+	l->x = xnew;
+	l->y = ynew;
+	return l;
 }

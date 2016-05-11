@@ -21,6 +21,7 @@ struct board
 struct piece * getSpace(struct board * b, int x , int y);
 int checkSpace(struct board * b, int x , int y);
 int updateAllMoves(struct board * b);
+struct board * copyBoard(struct board * b);
 
 
 

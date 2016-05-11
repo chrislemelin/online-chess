@@ -46,6 +46,7 @@ int specialKingMoveCheck(struct board *b, struct piece * k1, struct piece * k2);
 int removeMove(struct piece *p, int pos);
 int incheckCheck(struct board * b, struct piece * p, struct pos * m);
 int clearMoves(struct piece * p);
+struct pos * makeLoc(int x, int y);
 
 
 #endif
