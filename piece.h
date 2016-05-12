@@ -10,18 +10,6 @@
 
 #include "board.h"
 
-
-struct piece
-{
-	struct pos *loc;
-	char p;
-	int player;
-	struct pos * moves[64];
-	int s_moves;
-	int covered;
-	int active;
-}piece;
-
 struct pos
 {
 	int x,y;
@@ -34,6 +22,20 @@ struct pos
 	*/
 	int type;
 }pos;
+
+struct piece
+{
+	struct pos *loc;
+	char p;
+	int player;
+	struct pos * moves[64];
+	int s_moves;
+	int s_validmoves;
+	int covered;
+	int active;
+	int notMoved;
+}piece;
+
 
 int printMoves(struct piece *p);
 int addPiece(struct board *b, char p, int x, int y, int player);

@@ -10,7 +10,9 @@ int addPiece(struct board *b, char p, int x, int y, int player)
 {
 	struct piece *thingy = malloc(sizeof(struct piece));
 	struct pos *loc = makeLoc(x,y);
+	thingy->notMoved = 1;
 	thingy->s_moves = 0;
+	thingy->s_validmoves = 0;
 	thingy->loc = loc;
 	thingy->p = p;
 	thingy->player = player;
@@ -18,19 +20,6 @@ int addPiece(struct board *b, char p, int x, int y, int player)
 	b->pieces[b->s_pieces] = thingy;
 	b->s_pieces++;
 }
-
-int addPieceC(struct board *b, struct piece * p)
-{
-	struct piece *thingy = malloc(sizeof(struct piece));
-	struct pos *loc =  makeLoc(p->loc->x, p->loc->y);
-	thingy->s_moves = 0;
-	thingy->p = p->p;
-	thingy->player = p->player;
-	thingy->active = 1;
-	b->pieces[b->s_pieces] = thingy;
-	b->s_pieces++;
-}
-
 
 /*@author
 */
@@ -64,7 +53,11 @@ int removeMove(struct piece *p, int pos)
 	}
 	p->s_moves--;
 	*/
-	p->moves[pos]->type = 3;
+	if(p->moves[pos]->type != 3)
+	{
+		p->moves[pos]->type = 3;
+		p->s_validmoves--;
+	}
 }
 
 
@@ -81,6 +74,7 @@ int addMove(struct board * b , struct piece *p, int x , int y , int opp )
 		m->type = 0;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
+		p->s_validmoves++;
 	}
 
 	else if(opp == check)
@@ -89,6 +83,7 @@ int addMove(struct board * b , struct piece *p, int x , int y , int opp )
 		m->type = 1;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
+		p->s_validmoves++;
 	}
 	else if(p->player == check)
 	{
@@ -127,6 +122,7 @@ int clearMoves(struct piece * p)
 		free(p->moves[a]);
 	}
 	p->s_moves = 0;
+	p->s_validmoves = 0;
 }
 
 
@@ -157,6 +153,10 @@ int updateMoves(struct board *b ,struct piece *p)
 		addMove(b,p,p->loc->x,p->loc->y+temp,opp);
 		addMove(b,p,p->loc->x-1,p->loc->y+temp,opp);
 		addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
+		if (p->notMoved)
+		{
+			addMove(b,p,p->loc->x,p->loc->y+ temp*2,opp);
+		}
 	}
 
 	if(p->p == ROOK)
@@ -204,6 +204,10 @@ int updateMoves(struct board *b ,struct piece *p)
 		addMove(b,p,p->loc->x-1,p->loc->y,opp);
 		addMove(b,p,p->loc->x,p->loc->y-1,opp);
 		addMove(b,p,p->loc->x,p->loc->y+1,opp);
+		addMove(b,p,p->loc->x+1,p->loc->y+1,opp);
+		addMove(b,p,p->loc->x-1,p->loc->y+1,opp);
+		addMove(b,p,p->loc->x-1,p->loc->y-1,opp);
+		addMove(b,p,p->loc->x+1,p->loc->y-1,opp);
 	}
 	return p->s_moves;
 
@@ -273,9 +277,10 @@ int printMoves(struct piece *p)
 		printf(RED);
 	printf("%c : ",p->p);
 	printf(RESET);
+	printf("loc : (%d,%d),valid moves :%d, ",p->loc->x, p->loc->y,p->s_validmoves);
 	for(int a = 0 ; a < p->s_moves;a++)
 	{
-		printf("type :%d (%d,%d) ",p->moves[a]->type, p->moves[a]->x, p->moves[a]->y);
+		printf("type :%d (%d,%d), ",p->moves[a]->type, p->moves[a]->x, p->moves[a]->y);
 	}
 	printf("\n");
 }
@@ -298,4 +303,23 @@ struct pos * makeLoc(int x, int y)
 	l->x = xnew;
 	l->y = ynew;
 	return l;
+}
+
+
+/*	returns NULL if not valid
+ *	returns pointer to move if valid
+ */
+struct pos * validMoveForPiece(struct piece *p,struct pos * m)
+{
+		for(int a = 0; a < p->s_moves;a++)
+		{
+			if(p->moves[a]->type ==0 || p->moves[a]->type ==1 )
+			{
+				if(p->moves[a]->x == m->x && p->moves[a]->y == m->y)
+				{
+					return p->moves[a];
+				}
+			}
+		}
+		return NULL;
 }

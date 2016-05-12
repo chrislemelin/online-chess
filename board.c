@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "display.h"
 #include "piece.h"
 
 #define BOARD_LENGTH 8
 #define BOARD_WIDTH 8
 #define DISPLAY_X 10
-#define DISPLAY_Y 20
+#define DISPLAY_Y 35
 
-#define BOARD_HOR '-'
+#define BOARD_HOR '_'
 #define BOARD_VERT '|'
 #define BOARD_CORN '+'
 
 
+
+int simCheck(struct board * b, struct piece * p,struct pos * move, struct piece * k);
 
 int drawBoard(struct board *);
 int initBoard(struct board *);
@@ -22,20 +25,21 @@ int main(int argc, char * argv[])
 {
 	clear();
 	struct board *boardy =  malloc(sizeof(struct board));
+	initBoard(boardy);
 //	initBoard(board
 	//printf("%d\n", boardy->s_pieces);
-	addPiece(boardy,KING,1,1,0);
-	addPiece(boardy,ROOK,1,2,0);
+//	addPiece(boardy,KING,1,1,0);
+//	addPiece(boardy,ROOK,1,2,0);
 
 //	addPiece(boardy,ROOK,1,5,1);
 //	addPiece(boardy,KING,1,3,1);
-	addPiece(boardy,ROOK,1,5,1);
-	addPiece(boardy,KING,3,2,1);
+//	addPiece(boardy,ROOK,4,2,1);
+//	addPiece(boardy,KING,5,2,1);
 
 	updateAllMoves(boardy);
 
-//	printf("%d answer\n ",simCheck(boardy,boardy->pieces[1],boardy->pieces[1]->moves[4],boardy->pieces[0]));
-
+//	tryMove(boardy,4,2,3,2);
+//	tryMove(boardy,3,2,3,4);
 //	struct board * b = copyBoard(boardy);
 //	deleteBoard(b);
 
@@ -56,17 +60,84 @@ int main(int argc, char * argv[])
 
 
 //	printMoves(b->pieces[1]);
-printMoves(boardy->pieces[1]);
-drawBoard(boardy);
-deleteBoard(boardy);
+	while(1)
+	{
+		drawBoard(boardy);
+		set_cur_pos(55,0);
+		char * input;
+		char *end;
+		while(1)
+		{
+			gets(input);
+			int x1 = strtol(input ,&end,10);
+			int y1 = strtol(end ,&end,10);
+			int x2 = strtol(end ,&end,10);
+			int y2 = strtol(end ,&end,10);
+			int t = tryMove (boardy,x1,y1,x2,y2);
+			printf("%d %d %d %d %d\n", x1,y1,x2,y2,t);
+			if(t == 1)
+			{
+				printf("sucess\n");
+				break;
+			}
+		}
 
-	set_cur_pos(50,0);
+
+	}
+	deleteBoard(boardy);
 }
+
+int printAllMoves(struct board * b)
+{
+	set_cur_pos(0,0);
+	printf("player : %d" ,b->currentPlayer);
+	for (int a = 0 ; a< b->s_pieces;a++)
+	{
+		printMoves(b->pieces[a]);
+	}
+}
+
+/* returns 1 if valid
+ * returns -1 if invalid m1
+ * returns -2 if invalid m2
+ */
+
+int tryMove(struct board* b,int x1,int y1,int x2,int y2)
+{
+	struct pos * m1 = makeLoc(x1,y1);
+	struct pos * m2 = makeLoc(x2,y2);
+
+	struct piece * mover = getSpace(b,x1,y1);
+	if(mover == NULL)
+	{
+				return -1;
+	}
+	if(mover->player != b->currentPlayer)
+		return -1;
+
+	struct pos * m3 = validMoveForPiece(mover,m2);
+
+	if(m3 != NULL)
+	{
+		movePiece(b, mover, m3);
+		updateAllMoves(b);
+		return 1;
+	}
+	else
+	{
+		return -2;
+	}
+
+
+}
+
 
 //
 int drawBoard(struct board *b)
 {
-//	clear();
+	clear();
+	set_cur_pos(0,0);
+	printAllMoves(b);
 
 	for (int x = 0 ; x < BOARD_WIDTH; x++)
 	{
@@ -87,6 +158,7 @@ int drawBoard(struct board *b)
 			put(BOARD_HOR);
 
 		}
+;
 		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X);
 		put(BOARD_HOR);
 		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+1);
@@ -102,6 +174,11 @@ int drawBoard(struct board *b)
 		put(BOARD_VERT);
 		set_cur_pos(x*2+1+DISPLAY_Y,BOARD_WIDTH*4+DISPLAY_X);
 		put(BOARD_VERT);
+
+		set_cur_pos(DISPLAY_Y-1,4*x+DISPLAY_X+2);
+		put(x+'0');
+		set_cur_pos(x*2+1+DISPLAY_Y,DISPLAY_X+1+BOARD_WIDTH*4);
+		put(x+'0');
 
 
 		set_cur_pos(DISPLAY_Y,DISPLAY_X);
@@ -154,6 +231,7 @@ int deleteBoard(struct board * b)
 int initBoard(struct board *b)
 {
 	b->s_pieces = 0;
+	b->currentPlayer = 0;
 	for(int a = 0; a < BOARD_WIDTH;a++)
 	{
 		printf("%d\n",a);
@@ -213,7 +291,7 @@ struct piece * getSpace(struct board * b, int x , int y)
 		}
 
 	}
-	return 0;
+	return NULL;
 }
 
 int getOrder(struct board * b, struct piece * p)
@@ -264,19 +342,41 @@ int updateAllMoves(struct board * b)
 		}
 		updateMoves(b,b->pieces[a]);
 	}
-
-	for(int a = 0 ; a< b->s_pieces; a++)
+	if(k0 != NULL)
 	{
-		for(int c = 0 ; c < b->pieces[a]->s_moves;c++)
+		for(int a = 0 ; a< b->s_pieces; a++)
 		{
-			if(simCheck(b,b->pieces[a],b->pieces[a]->moves[c],k0) == 1)
+			if(b->pieces[a]->player == 1)
+				continue;
+			for(int c = 0 ; c < b->pieces[a]->s_moves;c++)
 			{
-				b->pieces[a]->moves[c]->type = 3;
+				if(b->pieces[a]->moves[c]-> type == 2)
+				{
+					continue;
+				}
+				if(simCheck(b,b->pieces[a],b->pieces[a]->moves[c],k0) == 1)
+				{
+					removeMove(b->pieces[a],c);
+				}
 			}
 		}
 	}
 
-
+	if(k1 != NULL)
+	{
+		for(int a = 0 ; a< b->s_pieces; a++)
+		{
+			if(b->pieces[a]->player == 0)
+				continue;
+			for(int c = 0 ; c < b->pieces[a]->s_moves;c++)
+			{
+				if(simCheck(b,b->pieces[a],b->pieces[a]->moves[c],k1) == 1)
+				{
+					removeMove(b->pieces[a],c);
+				}
+			}
+		}
+	}
 
 	if(k0 != NULL)
 	{
@@ -292,16 +392,25 @@ int updateAllMoves(struct board * b)
 
 int movePiece(struct board * b, struct piece * p, struct pos* move)
 {
-	if(move->type == 2 || move->type == 3)
-		return 0;
+	//if(move->type == 2 || move->type == 3)
+		//return 0;
 
 	if(move->type == 1)
 	{
 		struct piece * deadPiece = getSpace(b,move->x,move->y);
 		removePiece(b,deadPiece);
 	}
+	p->notMoved = 0;
 	free(p->loc);
 	p->loc = makeLoc(move->x,move->y);
+	if(b->currentPlayer == 0)
+	{
+		b->currentPlayer = 1;
+	}
+	else
+		b->currentPlayer = 0;
+
+
 }
 
 // returns 0 if NOT in check after the move
@@ -310,15 +419,12 @@ int simCheck(struct board * b, struct piece * p, struct pos * move, struct piece
 {
 	struct piece * inactivePiece = NULL;
 	struct pos * tempLoc;
-//struct pos * move = p->moves[a];
 	struct board * nBoard = copyBoard(b);
-//	printf("1\n");
 
  	int temp = getOrder(b, p);
 
 	movePiece(nBoard,nBoard->pieces[temp],move);
 	updateAllMovesSim(nBoard);
-//	drawBoard(nBoard);
 	if(incheckCheck(nBoard,k,k->loc) == 1)
 	{
 		deleteBoard(nBoard);
