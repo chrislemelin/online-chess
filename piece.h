@@ -15,17 +15,25 @@ struct pos
 	int x,y;
 
 	/*
+	covering = -2
+	will put player in check = -1
+
 	normal = 0
 	capturing = 1
-	covering = 2
-	will put player in check = 3
+	rooking = 4
+	enpassant = 5
+	double move = 6
 	*/
 	int type;
+	struct piece * taken;
+
+
 }pos;
 
 struct piece
 {
-	struct pos *loc;
+	struct pos * loc;
+	struct pos * ghostLoc;
 	char p;
 	int player;
 	struct pos * moves[64];

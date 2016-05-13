@@ -11,6 +11,7 @@ int addPiece(struct board *b, char p, int x, int y, int player)
 	struct piece *thingy = malloc(sizeof(struct piece));
 	struct pos *loc = makeLoc(x,y);
 	thingy->notMoved = 1;
+	thingy->ghostLoc = NULL;
 	thingy->s_moves = 0;
 	thingy->s_validmoves = 0;
 	thingy->loc = loc;
@@ -53,34 +54,47 @@ int removeMove(struct piece *p, int pos)
 	}
 	p->s_moves--;
 	*/
-	if(p->moves[pos]->type != 3)
+	if(p->moves[pos]->type >= 0)
 	{
-		p->moves[pos]->type = 3;
+		p->moves[pos]->type = -1;
 		p->s_validmoves--;
 	}
 }
 
 
-/*
-	returns the value of the ckeckspace
- */
-int addMove(struct board * b , struct piece *p, int x , int y , int opp )
-{
-	int check = checkSpace(b,x,y);
 
+/*
+	returns the value of the checkspace
+ */
+int addMove(struct board * b , struct piece *p, int x , int y , int opp)
+{
+	int check;
+	if (p->p == PAWN)
+		check = checkSpace(b,x,y,1,p->player);
+	else
+		check = checkSpace(b,x,y,0,0);
 	if(-1 == check)
 	{
 		struct pos *m = makeLoc(x,y);
-		m->type = 0;
+		m->taken = NULL;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
 		p->s_validmoves++;
+		if(p->p == PAWN && abs(p->loc->y-y) == 2)
+		{
+			m->type = 6;
+		}
+		else
+		{
+			m->type = 0;
+		}
 	}
 
 	else if(opp == check)
 	{
 		struct pos *m = makeLoc(x,y);
 		m->type = 1;
+		m->taken = getSpace(b,x,y);
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
 		p->s_validmoves++;
@@ -88,10 +102,31 @@ int addMove(struct board * b , struct piece *p, int x , int y , int opp )
 	else if(p->player == check)
 	{
 		struct pos *m = makeLoc(x,y);
-		m->type = 2;
+		m->taken = NULL;
+		m->type = -2;
 		p->moves[p->s_moves] = m;
 		p->s_moves++;
 	}
+
+	else if(2 == check)
+	{
+		if(p->p == PAWN)
+		{
+			struct pos *m = makeLoc(x,y);
+			m->type = 5;
+			p->moves[p->s_moves] = m;
+			p->s_moves++;
+			if(p->player == 0)
+			{
+				m->taken = getSpace(b,x,y+1);
+			}
+			else
+			{
+				m->taken = getSpace(b,x,y-1);
+			}
+		}
+	}
+
 	return check;
 
 }
@@ -125,6 +160,35 @@ int clearMoves(struct piece * p)
 	p->s_validmoves = 0;
 }
 
+int clearGhost(struct piece * p)
+{
+	if(p->ghostLoc != NULL)
+	{
+		free(p->ghostLoc);
+		p->ghostLoc = NULL;
+	}
+}
+/*
+int enPasseMoves(struct piece * p)
+{
+	if(p->p == PAWN)
+	{
+		int temp;
+		if(p->player == 0)
+		{
+			temp = -1;
+		}
+		else
+		{
+			temp = 1;
+		}
+		addMove(b,p,p->loc->x-1,p->loc->y+temp,opp);
+		addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
+
+
+	}
+}
+*/
 
 
 /* return the number of moves that the piece can make
@@ -151,9 +215,12 @@ int updateMoves(struct board *b ,struct piece *p)
 			temp = 1;
 		}
 		addMove(b,p,p->loc->x,p->loc->y+temp,opp);
-		addMove(b,p,p->loc->x-1,p->loc->y+temp,opp);
-		addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
-		if (p->notMoved)
+		if (checkSpace(b,p->loc->x+1,p->loc->y+temp,1,p->player) != -1)
+			addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
+		if (checkSpace(b,p->loc->x-1,p->loc->y+temp,1,p->player) != -1)
+			addMove(b,p,p->loc->x-1,p->loc->y+temp,opp);
+		if (p->notMoved && checkSpace(b,p->loc->x,p->loc->y+temp,0,0) == -1
+	&& checkSpace(b,p->loc->x,p->loc->y+temp*2,0,0) == -1)
 		{
 			addMove(b,p,p->loc->x,p->loc->y+ temp*2,opp);
 		}
@@ -313,7 +380,7 @@ struct pos * validMoveForPiece(struct piece *p,struct pos * m)
 {
 		for(int a = 0; a < p->s_moves;a++)
 		{
-			if(p->moves[a]->type ==0 || p->moves[a]->type ==1 )
+			if(p->moves[a]->type >= 0)
 			{
 				if(p->moves[a]->x == m->x && p->moves[a]->y == m->y)
 				{

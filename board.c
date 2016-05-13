@@ -62,6 +62,7 @@ int main(int argc, char * argv[])
 //	printMoves(b->pieces[1]);
 	while(1)
 	{
+		int quit = 0;
 		drawBoard(boardy);
 		set_cur_pos(55,0);
 		char * input;
@@ -69,6 +70,12 @@ int main(int argc, char * argv[])
 		while(1)
 		{
 			gets(input);
+			printf("%s\n",input );
+			if(strcmp(input,&"quit")==0)
+			{
+				quit = 1;
+				break;
+			}
 			int x1 = strtol(input ,&end,10);
 			int y1 = strtol(end ,&end,10);
 			int x2 = strtol(end ,&end,10);
@@ -81,8 +88,10 @@ int main(int argc, char * argv[])
 				break;
 			}
 		}
-
-
+		if (quit)
+		{
+			break;
+		}
 	}
 	deleteBoard(boardy);
 }
@@ -216,6 +225,10 @@ struct board * copyBoard(struct board * b)
 
 		addPiece(nBoard,b->pieces[a]->p,x,
 			y,b->pieces[a]->player);
+
+		int notM = b->pieces[a]->notMoved;
+
+		nBoard->pieces[a]->notMoved = notM;
 	}
 	return nBoard;
 }
@@ -265,8 +278,9 @@ int initBoard(struct board *b)
 /* returns number of player of the piece at the position x,y
  * returns -1 if no piece is at the position
  * returns -2 if coordinate is not on the board
+ * return 2 if valid enzzZ
  */
-int checkSpace(struct board * b, int x , int y)
+int checkSpace(struct board * b, int x , int y, int g, int player)
 {
 	if(x < 0 || x >= BOARD_WIDTH)
 		return -2;
@@ -277,6 +291,9 @@ int checkSpace(struct board * b, int x , int y)
 	{
 		if(b->pieces[a]->loc->x == x && b->pieces[a]->loc->y ==y)
 			return b->pieces[a]->player;
+		if(g && b->pieces[a]->ghostLoc != NULL && b->pieces[a]->ghostLoc->x == x
+			 && b->pieces[a]->ghostLoc->y ==y && b->pieces[a]->player != player)
+			 return 2;
 	}
 	return -1;
 }
@@ -395,22 +412,43 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 	//if(move->type == 2 || move->type == 3)
 		//return 0;
 
-	if(move->type == 1)
+
+	for(int a = 0 ; a < b->s_pieces; a++)
 	{
-		struct piece * deadPiece = getSpace(b,move->x,move->y);
-		removePiece(b,deadPiece);
+		clearGhost(b->pieces[a]);
+	}
+
+	if(move->taken != NULL)
+	{
+		removePiece(b,move->taken);
 	}
 	p->notMoved = 0;
+
 	free(p->loc);
 	p->loc = makeLoc(move->x,move->y);
+	if(move->type == 6)
+	{
+		if(p->player ==0)
+		{
+			p->ghostLoc= makeLoc(move->x, move->y +1);
+			printf("made ghosty at %d,%d ",move->x, move->y +1);
+		}
+		else
+		{
+			p->ghostLoc= makeLoc(move->x, move->y -1);
+			printf("made ghosty at %d,%d ",move->x, move->y +1);
+		}
+	}
+	else
+	{
+		p->ghostLoc = NULL;
+	}
 	if(b->currentPlayer == 0)
 	{
 		b->currentPlayer = 1;
 	}
 	else
 		b->currentPlayer = 0;
-
-
 }
 
 // returns 0 if NOT in check after the move

@@ -22,7 +22,7 @@ struct board
 //int simCheck(struct board * b, struct piece * p,struct pos * move, struct piece * k);
 
 struct piece * getSpace(struct board * b, int x , int y);
-int checkSpace(struct board * b, int x , int y);
+int checkSpace(struct board * b, int x , int y, int g, int player);
 int updateAllMoves(struct board * b);
 struct board * copyBoard(struct board * b);
 int deleteBoard(struct board * b);
