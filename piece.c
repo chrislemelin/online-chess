@@ -128,27 +128,26 @@ int addMove(struct board * b , struct piece *p, int x , int y , int opp)
 	}
 
 	return check;
-
 }
 
 int addMoves(struct board * b, struct piece *p, int x , int y, int opp)
+{
+	int tempx = p->loc->x;
+	int tempy = p->loc->y;
+
+	while(1)
 	{
-		int tempx = p->loc->x;
-		int tempy = p->loc->y;
+		tempx+=x;
+		tempy+=y;
 
-		while(1)
+		int check = addMove(b,p,tempx,tempy,opp);
+		if(check == -1)
 		{
-			tempx+=x;
-			tempy+=y;
-
-			int check = addMove(b,p,tempx,tempy,opp);
-			if(check == -1)
-			{
-				continue;
-			}
-			break;
+			continue;
 		}
+		break;
 	}
+}
 
 int clearMoves(struct piece * p)
 {
@@ -168,27 +167,36 @@ int clearGhost(struct piece * p)
 		p->ghostLoc = NULL;
 	}
 }
-/*
-int enPasseMoves(struct piece * p)
+
+int addCastleing(struct board * b, struct piece * r)
 {
-	if(p->p == PAWN)
+	for(int a = 0 ; a< r->s_moves; a++)
 	{
-		int temp;
-		if(p->player == 0)
+		if(r->moves[a]->type == -2 &&
+			getSpace(b,r->moves[a]->x,r->moves[a]->y)->p == KING &&
+			r->notMoved && getSpace(b,r->moves[a]->x,r->moves[a]->y)->notMoved)
 		{
-			temp = -1;
+			struct pos *m = makeLoc(r->moves[a]->x,r->moves[a]->y);
+			m->type = 4;
+			m->taken = NULL;
+			m->additionalP = 	getSpace(b,r->moves[a]->x,r->moves[a]->y);
+			if(r->moves[a]->x > r->loc->x)
+			{
+				m->additionalM =  makeLoc(m->additionalP->loc->x-2,m->additionalP->loc->y);
+				m->x = m->x-1;
+			}
+			else
+			{
+				m->additionalM =  makeLoc(m->additionalP->loc->x+2,m->additionalP->loc->y);
+				m->x = m->x+1;
+			}
+			r->moves[r->s_moves] = m;
+			r->s_moves++;
+			r->s_validmoves++;
 		}
-		else
-		{
-			temp = 1;
-		}
-		addMove(b,p,p->loc->x-1,p->loc->y+temp,opp);
-		addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
-
-
 	}
 }
-*/
+
 
 
 /* return the number of moves that the piece can make

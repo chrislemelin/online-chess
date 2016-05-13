@@ -167,7 +167,6 @@ int drawBoard(struct board *b)
 			put(BOARD_HOR);
 
 		}
-;
 		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X);
 		put(BOARD_HOR);
 		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+1);
@@ -256,6 +255,7 @@ int initBoard(struct board *b)
 	addPiece(b,ROOK,7,7,0);
 	addPiece(b,ROOK,0,7,0);
 
+/*
 	addPiece(b,KNIGHT,1,0,1);
 	addPiece(b,KNIGHT,6,0,1);
 	addPiece(b,KNIGHT,1,7,0);
@@ -268,6 +268,7 @@ int initBoard(struct board *b)
 
 	addPiece(b,QUEEN,4,7,0);
 	addPiece(b,QUEEN,4,0,1);
+*/
 
 	addPiece(b,KING,3,7,0);
 	addPiece(b,KING,3,0,1);
@@ -359,6 +360,15 @@ int updateAllMoves(struct board * b)
 		}
 		updateMoves(b,b->pieces[a]);
 	}
+
+	for(int a = 0 ; a< b->s_pieces; a++)
+	{
+		if(b->pieces[a]->p == ROOK)
+		{
+			addCastleing(b,b->pieces[a]);
+		}
+	}
+
 	if(k0 != NULL)
 	{
 		for(int a = 0 ; a< b->s_pieces; a++)

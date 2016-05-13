@@ -26,7 +26,8 @@ struct pos
 	*/
 	int type;
 	struct piece * taken;
-
+	struct piece * additionalP;
+	struct pos * additionalM;
 
 }pos;
 
