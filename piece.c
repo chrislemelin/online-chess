@@ -177,18 +177,21 @@ int addCastleing(struct board * b, struct piece * r)
 			r->notMoved && getSpace(b,r->moves[a]->x,r->moves[a]->y)->notMoved)
 		{
 			struct pos *m = makeLoc(r->moves[a]->x,r->moves[a]->y);
+			m->additionalM1 = makeLoc(r->moves[a]->x,r->moves[a]->y);
 			m->type = 4;
 			m->taken = NULL;
 			m->additionalP = 	getSpace(b,r->moves[a]->x,r->moves[a]->y);
+			//castle to the right
 			if(r->moves[a]->x > r->loc->x)
 			{
-				m->additionalM =  makeLoc(m->additionalP->loc->x-2,m->additionalP->loc->y);
-				m->x = m->x-1;
+				m->additionalM1->x--;
+				m->additionalM2 =  makeLoc(m->additionalP->loc->x-2,m->additionalP->loc->y);
 			}
+			//casle to the left
 			else
 			{
-				m->additionalM =  makeLoc(m->additionalP->loc->x+2,m->additionalP->loc->y);
-				m->x = m->x+1;
+				m->additionalM1->x++;
+				m->additionalM2 =  makeLoc(m->additionalP->loc->x+2,m->additionalP->loc->y);
 			}
 			r->moves[r->s_moves] = m;
 			r->s_moves++;
@@ -222,7 +225,9 @@ int updateMoves(struct board *b ,struct piece *p)
 		{
 			temp = 1;
 		}
-		addMove(b,p,p->loc->x,p->loc->y+temp,opp);
+
+		if (checkSpace(b,p->loc->x,p->loc->y+temp,0,0) == -1)
+			addMove(b,p,p->loc->x,p->loc->y+temp,opp);
 		if (checkSpace(b,p->loc->x+1,p->loc->y+temp,1,p->player) != -1)
 			addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
 		if (checkSpace(b,p->loc->x-1,p->loc->y+temp,1,p->player) != -1)
@@ -356,6 +361,12 @@ int printMoves(struct piece *p)
 	for(int a = 0 ; a < p->s_moves;a++)
 	{
 		printf("type :%d (%d,%d), ",p->moves[a]->type, p->moves[a]->x, p->moves[a]->y);
+		if(p->moves[a]->type == 4)
+		{
+			printf("%c  (%d,%d) ( %d,%d)",p->moves[a]->additionalP->p,
+			 p->moves[a]->additionalM1->x, p->moves[a]->additionalM1->y,
+			 p->moves[a]->additionalM2->x, p->moves[a]->additionalM2->y);
+		}
 	}
 	printf("\n");
 }

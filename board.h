@@ -1,7 +1,6 @@
-#ifndef BOARD
-#define BOARD
+#ifndef BOARD_H
+#define BOARD_H
 
-#include "piece.h"
 
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
@@ -19,13 +18,15 @@ struct board
 	int currentPlayer;
 }board;
 
-//int simCheck(struct board * b, struct piece * p,struct pos * move, struct piece * k);
-
 struct piece * getSpace(struct board * b, int x , int y);
 int checkSpace(struct board * b, int x , int y, int g, int player);
 int updateAllMoves(struct board * b);
 struct board * copyBoard(struct board * b);
 int deleteBoard(struct board * b);
+int tryMove(struct board* b,int x1,int y1,int x2,int y2, int player);
+int drawBoard(struct board *b);
+int initBoard(struct board *b);
+
 
 
 

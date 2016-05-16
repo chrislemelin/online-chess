@@ -1,26 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "display.h"
 #include "piece.h"
+#include "display.h"
+#include "board.h"
+
 
 #define BOARD_LENGTH 8
 #define BOARD_WIDTH 8
 #define DISPLAY_X 10
-#define DISPLAY_Y 35
+#define DISPLAY_Y 10
 
 #define BOARD_HOR '_'
 #define BOARD_VERT '|'
 #define BOARD_CORN '+'
 
 
-
+int movePiece(struct board * b, struct piece * p, struct pos* move);
 int simCheck(struct board * b, struct piece * p,struct pos * move, struct piece * k);
 
 int drawBoard(struct board *);
 int initBoard(struct board *);
 int occupied(struct board *, int, int);
-
+/*
 int main(int argc, char * argv[])
 {
 	clear();
@@ -95,7 +97,7 @@ int main(int argc, char * argv[])
 	}
 	deleteBoard(boardy);
 }
-
+*/
 int printAllMoves(struct board * b)
 {
 	set_cur_pos(0,0);
@@ -109,10 +111,15 @@ int printAllMoves(struct board * b)
 /* returns 1 if valid
  * returns -1 if invalid m1
  * returns -2 if invalid m2
+ * returns -3 if not your turn
  */
-
-int tryMove(struct board* b,int x1,int y1,int x2,int y2)
+int tryMove(struct board* b,int x1,int y1,int x2,int y2, int player)
 {
+	if(player != b->currentPlayer)
+	{
+		return -3;
+	}
+
 	struct pos * m1 = makeLoc(x1,y1);
 	struct pos * m2 = makeLoc(x2,y2);
 
@@ -136,23 +143,18 @@ int tryMove(struct board* b,int x1,int y1,int x2,int y2)
 	{
 		return -2;
 	}
-
-
 }
 
-
-//
 int drawBoard(struct board *b)
 {
 	clear();
 	set_cur_pos(0,0);
-	printAllMoves(b);
+//	printAllMoves(b);
 
 	for (int x = 0 ; x < BOARD_WIDTH; x++)
 	{
 		for(int y = 0 ; y < BOARD_LENGTH;y++)
 		{
-
 			set_cur_pos(y*2+DISPLAY_Y+2, 4*x+DISPLAY_X);
 			put(BOARD_VERT);
 			set_cur_pos(y*2+DISPLAY_Y+1, 4*x+DISPLAY_X);
@@ -209,6 +211,7 @@ int drawBoard(struct board *b)
 		put(b->pieces[a]->p);
 		printf(RESET);
 	}
+	set_cur_pos(50,0);
 
 }
 
@@ -255,7 +258,7 @@ int initBoard(struct board *b)
 	addPiece(b,ROOK,7,7,0);
 	addPiece(b,ROOK,0,7,0);
 
-/*
+
 	addPiece(b,KNIGHT,1,0,1);
 	addPiece(b,KNIGHT,6,0,1);
 	addPiece(b,KNIGHT,1,7,0);
@@ -268,7 +271,7 @@ int initBoard(struct board *b)
 
 	addPiece(b,QUEEN,4,7,0);
 	addPiece(b,QUEEN,4,0,1);
-*/
+
 
 	addPiece(b,KING,3,7,0);
 	addPiece(b,KING,3,0,1);
@@ -377,7 +380,7 @@ int updateAllMoves(struct board * b)
 				continue;
 			for(int c = 0 ; c < b->pieces[a]->s_moves;c++)
 			{
-				if(b->pieces[a]->moves[c]-> type == 2)
+				if(b->pieces[a]->moves[c]-> type == 2 ||b->pieces[a]->moves[c]-> type == 4)
 				{
 					continue;
 				}
@@ -434,19 +437,32 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 	}
 	p->notMoved = 0;
 
-	free(p->loc);
-	p->loc = makeLoc(move->x,move->y);
+
+	if(move->type != 4)
+	{
+		free(p->loc);
+		p->loc = makeLoc(move->x,move->y);
+		//printf("type = %d\n",move->type);
+	}
+
+	if(move->type == 4)
+	{
+		free(p->loc);
+		p->loc = 	makeLoc(move->additionalM1->x,move->additionalM1->y);
+		free(move->additionalP->loc);
+		move->additionalP->loc = 	makeLoc(move->additionalM2->x,move->additionalM2->y);
+	}
 	if(move->type == 6)
 	{
 		if(p->player ==0)
 		{
 			p->ghostLoc= makeLoc(move->x, move->y +1);
-			printf("made ghosty at %d,%d ",move->x, move->y +1);
+			//printf("made ghosty at %d,%d ",move->x, move->y +1);
 		}
 		else
 		{
 			p->ghostLoc= makeLoc(move->x, move->y -1);
-			printf("made ghosty at %d,%d ",move->x, move->y +1);
+			//printf("made ghosty at %d,%d ",move->x, move->y +1);
 		}
 	}
 	else
@@ -469,10 +485,26 @@ int simCheck(struct board * b, struct piece * p, struct pos * move, struct piece
 	struct pos * tempLoc;
 	struct board * nBoard = copyBoard(b);
 
+	struct pos * nMove = makeLoc(move->x, move->y);
+	nMove->type = move->type;
+	if(move->type ==4)
+	{
+		nMove->additionalM1 = move->additionalM1;
+		nMove->additionalM2 = move->additionalM2;
+		nMove->additionalP = getSpace(nBoard, move->x, move->y);
+	}
  	int temp = getOrder(b, p);
+	if(move->taken != NULL)
+	{
+		int temp1 = getOrder(b,move->taken);
+		nMove->taken = nBoard->pieces[temp1];
+	}
+//	printf("copying rooking3\n");
+	fflush(stdout);
 
-	movePiece(nBoard,nBoard->pieces[temp],move);
+	movePiece(nBoard,nBoard->pieces[temp],nMove);
 	updateAllMovesSim(nBoard);
+	free(nMove);
 	if(incheckCheck(nBoard,k,k->loc) == 1)
 	{
 		deleteBoard(nBoard);

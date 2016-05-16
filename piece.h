@@ -1,5 +1,5 @@
-#ifndef PIECE
-#define PIECE
+#ifndef PIECE_H
+#define PIECE_H
 
 #define PAWN 'P'
 #define ROOK 'R'
@@ -27,7 +27,8 @@ struct pos
 	int type;
 	struct piece * taken;
 	struct piece * additionalP;
-	struct pos * additionalM;
+	struct pos * additionalM1;
+	struct pos * additionalM2;
 
 }pos;
 
@@ -58,6 +59,10 @@ int removeMove(struct piece *p, int pos);
 int incheckCheck(struct board * b, struct piece * p, struct pos * m);
 int clearMoves(struct piece * p);
 struct pos * makeLoc(int x, int y);
+int addCastleing(struct board * b, struct piece * r);
+int clearGhost(struct piece * p);
+struct pos * validMoveForPiece(struct piece *p,struct pos * m);
+
 
 
 #endif
