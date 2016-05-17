@@ -8,9 +8,9 @@
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include "piece.h"
-#include "display.h"
-#include "board.h"
+#include "chess/piece.h"
+#include "chess/display.h"
+#include "chess/board.h"
 
 
 const int WAIT = 50;
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 //			int t = tryMove (b,x1,y1,x2,y2,0);
 			printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);
 			printf("fd0:%d fd1:%d current:%d\n",fd0,fd1,connections[a]);
-			sleep(5);
+			//sleep(5);
 			n = write(connections[a],"I got your message",18);
 			if (n < 0)
 				error("ERROR writing to socket");
