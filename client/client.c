@@ -77,8 +77,6 @@ int main(int argc, char *argv[])
           drawBoard(buffer);
         //  printf("\033[%d;%dH", 0,0);
           //break;
-          set_cur_pos(20,0);
-          printf("___");
         }
         if (buffer[0] == 'm')
         {

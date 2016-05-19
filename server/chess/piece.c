@@ -170,6 +170,10 @@ int clearGhost(struct piece * p)
 
 int addCastleing(struct board * b, struct piece * r)
 {
+	if(r->notMoved == 0)
+	{
+		return 0;
+	}
 	for(int a = 0 ; a< r->s_moves; a++)
 	{
 		if(r->moves[a]->type == -2 &&

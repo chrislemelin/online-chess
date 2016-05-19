@@ -10,7 +10,7 @@
 #define BOARD_LENGTH 8
 #define BOARD_WIDTH 8
 #define DISPLAY_X 10
-#define DISPLAY_Y 10
+#define DISPLAY_Y 35
 
 #define BOARD_HOR '_'
 #define BOARD_VERT '|'
@@ -23,7 +23,7 @@ int simCheck(struct board * b, struct piece * p,struct pos * move, struct piece 
 int drawBoard(struct board *);
 int initBoard(struct board *);
 int occupied(struct board *, int, int);
-/*
+
 int main(int argc, char * argv[])
 {
 	clear();
@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
 			int y1 = strtol(end ,&end,10);
 			int x2 = strtol(end ,&end,10);
 			int y2 = strtol(end ,&end,10);
-			int t = tryMove (boardy,x1,y1,x2,y2);
+			int t = tryMove (boardy,x1,y1,x2,y2,boardy->currentPlayer);
 			printf("%d %d %d %d %d\n", x1,y1,x2,y2,t);
 			if(t == 1)
 			{
@@ -98,7 +98,7 @@ int main(int argc, char * argv[])
 	}
 	deleteBoard(boardy);
 }
-*/
+
 
 char * boardToString(struct board * b)
 {
@@ -161,13 +161,19 @@ int tryMove(struct board* b,int x1,int y1,int x2,int y2, int player)
 	{
 		return -2;
 	}
+	free(m1);
+	free(m2);
+
 }
 
 int drawBoard(struct board *b)
 {
 	clear();
-	set_cur_pos(0,0);
 //	printAllMoves(b);
+//	return 0;
+	set_cur_pos(0,20);
+	printf("pieces=%d",b->s_pieces);
+	set_cur_pos(0,0);
 
 	for (int x = 0 ; x < BOARD_WIDTH; x++)
 	{
@@ -229,7 +235,7 @@ int drawBoard(struct board *b)
 		put(b->pieces[a]->p);
 		printf(RESET);
 	}
-	set_cur_pos(50,0);
+	set_cur_pos(55,0);
 
 }
 
@@ -442,22 +448,28 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 {
 	//if(move->type == 2 || move->type == 3)
 		//return 0;
-
+	printf("2char:%c x:%d y:%d type:%d\n",p->p,p->loc->x,p->loc->y,p->loc->type);
+	fflush(stdout);
 
 	for(int a = 0 ; a < b->s_pieces; a++)
 	{
 		clearGhost(b->pieces[a]);
 	}
-
+	printf("3char:%c x:%d y:%d type:%d\n",p->p,move->x,move->y,move->type);
+	fflush(stdout);
 	if(move->taken != NULL)
 	{
+		printf("Rchar:%c x:%d y:%d type:%d\n",move->taken->p,move->taken->loc->x,move->taken->loc->y,move->taken->loc->type);
 		removePiece(b,move->taken);
 	}
 	p->notMoved = 0;
-
+	printf("4char:%c x:%d y:%d type:%d\n",p->p,p->loc->x,p->loc->y,p->loc->type);
+	fflush(stdout);
 
 	if(move->type != 4)
 	{
+		printf("5char:%c x:%d y:%d type:%d\n",p->p,p->loc->x,p->loc->y,p->loc->type);
+		fflush(stdout);
 		free(p->loc);
 		p->loc = makeLoc(move->x,move->y);
 		//printf("type = %d\n",move->type);
@@ -467,7 +479,7 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 	{
 		free(p->loc);
 		p->loc = 	makeLoc(move->additionalM1->x,move->additionalM1->y);
-		free(move->additionalP->loc);
+		//free(move->additionalP->loc);
 		move->additionalP->loc = 	makeLoc(move->additionalM2->x,move->additionalM2->y);
 	}
 	if(move->type == 6)
@@ -516,10 +528,15 @@ int simCheck(struct board * b, struct piece * p, struct pos * move, struct piece
 	{
 		int temp1 = getOrder(b,move->taken);
 		nMove->taken = nBoard->pieces[temp1];
+		printf("taken corrupted here\n");
 	}
-//	printf("copying rooking3\n");
+	else{
+		move->taken = NULL;
+	}
+	printf("char:%c x:%d y:%d type:%d\n",p->p,nBoard->pieces[temp]->
+	loc->x,nBoard->pieces[temp]->loc->y,temp);
 	fflush(stdout);
-
+//	printAllMoves(nBoard);
 	movePiece(nBoard,nBoard->pieces[temp],nMove);
 	updateAllMovesSim(nBoard);
 	free(nMove);

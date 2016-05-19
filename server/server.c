@@ -153,10 +153,22 @@ int main(int argc, char *argv[])
 				if(connections[a] == fd0)
 				{
 					t = tryMove (b,x1,y1,x2,y2,0);
+					if(fd1 > 0)
+					{
+						strcat(buffer,"m");
+						strcat(buffer,"your turn!!");
+					//	n = write(fd1,buffer,256);
+					}
 				}
 				if(connections[a] == fd1)
 				{
 					t = tryMove (b,x1,y1,x2,y2,1);
+					if(fd0 > 0)
+					{
+						strcat(buffer,"m");
+						strcat(buffer,"your turn!!");
+					//	n = write(fd0, buffer,256);
+					}
 				}
 	//			int t = tryMove (b,x1,y1,x2,y2,0);
 				printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);

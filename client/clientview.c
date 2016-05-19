@@ -93,6 +93,6 @@ int drawBoard(char * data)
 		a++;
 	}
 
-	set_cur_pos(20,10);
+	set_cur_pos(20,0);
 	put('~');
 }
