@@ -71,7 +71,6 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		drawBoard(b);
-		printf("board to string %s\n",boardToString(b));
 
 		printf("looking for keyboard\n");
 		num_readable = select(sockfd+1+a_connections , &readfds, NULL,NULL, NULL);
@@ -84,9 +83,16 @@ int main(int argc, char *argv[])
 			if (newsockfd < 0)
 				error("ERROR on accept");
 			printf("connected to player %d: \n",c_connections);
-			n = write(newsockfd,"Connected",18);
-			if (n < 0)
-				error("ERROR writing to socket");
+
+			sleep(1);
+
+			bzero(buffer,256);
+			char * temp = boardToString(b);
+			strcat(buffer,"b");
+			strcat(buffer,temp);
+			write(newsockfd,buffer,256);
+
+//			write(newsockfd,"connection esablished",30);
 
 			if(fd0 <0)
 			{
@@ -110,6 +116,10 @@ int main(int argc, char *argv[])
 			if (strcmp(buffer,"q\n") == 0)
 			{
 				printf("Exited Correctly\n");
+				for(int a = 0; a<c_connections;a++)
+				{
+					n = write(connections[a],"0",1);
+				}
 				close(sockfd);
 				return 0;
 			}
@@ -121,43 +131,75 @@ int main(int argc, char *argv[])
 
 			if(FD_ISSET(connections[a], &readfds))
 			{
-			bzero(buffer,256);
-			read(connections[a],buffer,255);
-			if (n < 0)
-				error("ERROR reading from socket");
-			if(buffer[0] == 'q')
-			{
-				disconnect(connections, a,&c_connections);
-				printf("closed connection on player %d",a);
-//				sleep(5);
-				a--;
-				continue;
-			}
-			char *end;
+				bzero(buffer,256);
+				n = read(connections[a],buffer,255);
+				if (n < 0)
+					error("ERROR reading from socket");
+				if(buffer[0] == 'q')
+				{
+					disconnect(connections, a,&c_connections);
+					printf("closed connection on player %d",a);
+	//				sleep(5);
+					a--;
+					continue;
+				}
+				char *end;
+
+				int x1 = strtol(buffer ,&end,10);
+				int y1 = strtol(end ,&end,10);
+				int x2 = strtol(end ,&end,10);
+				int y2 = strtol(end ,&end,10);
+				int t = 10;
+				if(connections[a] == fd0)
+				{
+					t = tryMove (b,x1,y1,x2,y2,0);
+				}
+				if(connections[a] == fd1)
+				{
+					t = tryMove (b,x1,y1,x2,y2,1);
+				}
+	//			int t = tryMove (b,x1,y1,x2,y2,0);
+				printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);
+				printf("fd0:%d fd1:%d current:%d\n",fd0,fd1,connections[a]);
+				//sleep(5);
+
+				bzero(buffer,256);
+				if(t== 1)
+				{
+					char * temp = boardToString(b);
+					strcat(buffer,"b");
+					strcat(buffer,temp);
+					if(fd0 > 0 )
+					{
+							n = write(fd0,buffer,256);
+					}
+					if(fd1 > 0)
+					{
+							n = write(fd1,buffer,256);
+					}
+					if (n < 0)
+						error("ERROR writing to socket");
+				}
+				if(t== -1)
+				{
+					strcat(buffer,"m");
+					strcat(buffer,"invalid first move");
+					n = write(connections[a],buffer,256);
+				}
+				if(t== -2)
+				{
+					strcat(buffer,"m");
+					strcat(buffer,"invalid second move");
+					n = write(connections[a],buffer,256);
+				}
+				if(t== -3)
+				{
+					strcat(buffer,"m");
+					strcat(buffer,"not your move");
+					n = write(connections[a],buffer,256);
+				}
 
 
-			int x1 = strtol(buffer ,&end,10);
-			int y1 = strtol(end ,&end,10);
-			int x2 = strtol(end ,&end,10);
-			int y2 = strtol(end ,&end,10);
-			int t = 10;
-			if(connections[a] == fd0)
-			{
-				t = tryMove (b,x1,y1,x2,y2,0);
-			}
-			if(connections[a] == fd1)
-			{
-				t = tryMove (b,x1,y1,x2,y2,1);
-			}
-//			int t = tryMove (b,x1,y1,x2,y2,0);
-			printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);
-			printf("fd0:%d fd1:%d current:%d\n",fd0,fd1,connections[a]);
-			//sleep(5);
-			 char * temp = boardToString(b);
-			n = write(fd0,temp,b->s_pieces*5);
-			n = write(fd1,temp,b->s_pieces*5);
-			if (n < 0)
-				error("ERROR writing to socket");
 			}
 		}
 		FD_ZERO(&readfds);

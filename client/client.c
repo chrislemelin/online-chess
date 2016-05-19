@@ -8,6 +8,7 @@
 #include <netdb.h>
 
 #include "clientview.h"
+#include "display.h"
 
 
 void error(const char *msg)
@@ -44,8 +45,10 @@ int main(int argc, char *argv[])
     serv_addr.sin_port = htons(portno);
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
-    n = read(sockfd,buffer,255);
+    /*
+    n = read(sockfd,buffer,256);
     printf("--%s\n",buffer);
+    */
 
     fd_set readfds;
     FD_SET(fileno(stdin),&readfds);
@@ -53,13 +56,13 @@ int main(int argc, char *argv[])
 
     while(1)
   	{
-      printf("Please enter the message: ");
-      fflush(stdout);
+  //    printf("Please enter the message: ");
       int num_readable = select(sockfd+1, &readfds, NULL,NULL, NULL);
       if(FD_ISSET(fileno(stdin),&readfds))
       {
+        printf("write from keyboard");
         bzero(buffer,256);
-        fgets(buffer,255,stdin);
+        fgets(buffer,256,stdin);
     		n = write(sockfd,buffer,strlen(buffer));
         if (n < 0)
     			error("ERROR writing to socket");
@@ -67,14 +70,31 @@ int main(int argc, char *argv[])
       if(FD_ISSET(sockfd,&readfds))
       {
     		bzero(buffer,256);
-        n = read(sockfd,buffer,255);
-        drawBoard(buffer);
-    		if (n < 0)
-    			error("ERROR reading from socket");
-    		//printf("%s\n",buffer);
-    	 }
+        n = read(sockfd,buffer,256);
+        if (buffer[0] == 'b')
+        {
+          memmove(buffer, buffer+1, strlen(buffer));
+          drawBoard(buffer);
+        //  printf("\033[%d;%dH", 0,0);
+          //break;
+          set_cur_pos(20,0);
+          printf("___");
+        }
+        if (buffer[0] == 'm')
+        {
+          memmove(buffer, buffer+1, strlen(buffer));
+          printf("%s\n",buffer);
+        }
+
+        if (buffer[0] == '0')
+        {
+          close(sockfd);
+          printf("connection severed\n");
+          break;
+        }
+
+       }
        FD_SET(fileno(stdin),&readfds);
        FD_SET(sockfd,&readfds);
-
      }
 }
