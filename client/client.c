@@ -7,6 +7,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "clientview.h"
+
+
 void error(const char *msg)
 {
     perror(msg);
@@ -42,21 +45,36 @@ int main(int argc, char *argv[])
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
         error("ERROR connecting");
     n = read(sockfd,buffer,255);
-    printf("%s\n",buffer);
+    printf("--%s\n",buffer);
+
+    fd_set readfds;
+    FD_SET(fileno(stdin),&readfds);
+    FD_SET(sockfd,&readfds);
+
     while(1)
-	{
-
-    		printf("Please enter the message: ");
+  	{
+      printf("Please enter the message: ");
+      fflush(stdout);
+      int num_readable = select(sockfd+1, &readfds, NULL,NULL, NULL);
+      if(FD_ISSET(fileno(stdin),&readfds))
+      {
+        bzero(buffer,256);
+        fgets(buffer,255,stdin);
+    		n = write(sockfd,buffer,strlen(buffer));
+        if (n < 0)
+    			error("ERROR writing to socket");
+      }
+      if(FD_ISSET(sockfd,&readfds))
+      {
     		bzero(buffer,256);
-    		fgets(buffer,255,stdin);
-		n = write(sockfd,buffer,strlen(buffer));
-		if (n < 0)
-			error("ERROR writing to socket");
-		bzero(buffer,256);
-		n = read(sockfd,buffer,255);
-		if (n < 0)
-			error("ERROR reading from socket");
-		printf("%s\n",buffer);
+        n = read(sockfd,buffer,255);
+        drawBoard(buffer);
+    		if (n < 0)
+    			error("ERROR reading from socket");
+    		//printf("%s\n",buffer);
+    	 }
+       FD_SET(fileno(stdin),&readfds);
+       FD_SET(sockfd,&readfds);
 
-	}
+     }
 }

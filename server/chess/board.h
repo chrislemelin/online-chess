@@ -26,6 +26,7 @@ int deleteBoard(struct board * b);
 int tryMove(struct board* b,int x1,int y1,int x2,int y2, int player);
 int drawBoard(struct board *b);
 int initBoard(struct board *b);
+char * boardToString(struct board * b);
 
 
 

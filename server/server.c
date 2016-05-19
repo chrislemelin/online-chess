@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		drawBoard(b);
+		printf("board to string %s\n",boardToString(b));
 
 		printf("looking for keyboard\n");
 		num_readable = select(sockfd+1+a_connections , &readfds, NULL,NULL, NULL);
@@ -152,7 +153,9 @@ int main(int argc, char *argv[])
 			printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);
 			printf("fd0:%d fd1:%d current:%d\n",fd0,fd1,connections[a]);
 			//sleep(5);
-			n = write(connections[a],"I got your message",18);
+			 char * temp = boardToString(b);
+			n = write(fd0,temp,b->s_pieces*5);
+			n = write(fd1,temp,b->s_pieces*5);
 			if (n < 0)
 				error("ERROR writing to socket");
 			}

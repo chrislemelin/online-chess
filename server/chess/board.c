@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "piece.h"
 #include "display.h"
 #include "board.h"
@@ -98,6 +99,23 @@ int main(int argc, char * argv[])
 	deleteBoard(boardy);
 }
 */
+
+char * boardToString(struct board * b)
+{
+	char * tempT = calloc(b->s_pieces*5,1);
+	char * temp = malloc(5);
+	for(int a = 0 ; a < b->s_pieces ; a++)
+	{
+		temp[0] = b->pieces[a]->p;
+		temp[1] = b->pieces[a]->player+ '0';
+		temp[2] = b->pieces[a]->loc->x + '0';
+		temp[3] = b->pieces[a]->loc->y + '0';
+		temp[4] = '\0';
+;		tempT = strcat(tempT,temp);
+	}
+	return tempT;
+}
+
 int printAllMoves(struct board * b)
 {
 	set_cur_pos(0,0);
