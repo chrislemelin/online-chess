@@ -12,6 +12,7 @@
 #include "chess/display.h"
 #include "chess/board.h"
 
+#define _POSIX_C_SOURCE 1
 
 const int WAIT = 50;
 const int MAXC = 10;
@@ -27,8 +28,8 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-	int fd0 = -1;
-	int fd1 = -1;
+	int fd0 = -5;
+	int fd1 = -5;
 
 	int connections[MAXC];
 	int c_connections = 0;
@@ -90,6 +91,7 @@ int main(int argc, char *argv[])
 			char * temp = boardToString(b);
 			strcat(buffer,"b");
 			strcat(buffer,temp);
+			strcat(buffer,"*");
 			write(newsockfd,buffer,256);
 
 //			write(newsockfd,"connection esablished",30);
@@ -118,7 +120,7 @@ int main(int argc, char *argv[])
 				printf("Exited Correctly\n");
 				for(int a = 0; a<c_connections;a++)
 				{
-					n = write(connections[a],"0",1);
+					n = write(connections[a],"0*",2);
 				}
 				close(sockfd);
 				return 0;
@@ -150,25 +152,15 @@ int main(int argc, char *argv[])
 				int x2 = strtol(end ,&end,10);
 				int y2 = strtol(end ,&end,10);
 				int t = 10;
+
+				bzero(buffer,256);
 				if(connections[a] == fd0)
 				{
 					t = tryMove (b,x1,y1,x2,y2,0);
-					if(fd1 > 0)
-					{
-						strcat(buffer,"m");
-						strcat(buffer,"your turn!!");
-					//	n = write(fd1,buffer,256);
-					}
 				}
 				if(connections[a] == fd1)
 				{
 					t = tryMove (b,x1,y1,x2,y2,1);
-					if(fd0 > 0)
-					{
-						strcat(buffer,"m");
-						strcat(buffer,"your turn!!");
-					//	n = write(fd0, buffer,256);
-					}
 				}
 	//			int t = tryMove (b,x1,y1,x2,y2,0);
 				printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);
@@ -181,6 +173,7 @@ int main(int argc, char *argv[])
 					char * temp = boardToString(b);
 					strcat(buffer,"b");
 					strcat(buffer,temp);
+					strcat(buffer,"*");
 					if(fd0 > 0 )
 					{
 							n = write(fd0,buffer,256);
@@ -191,27 +184,44 @@ int main(int argc, char *argv[])
 					}
 					if (n < 0)
 						error("ERROR writing to socket");
+					bzero(buffer,256);
+					if(connections[a] == fd1)
+					{
+						if(fd0 > 0)
+						{
+							strcat(buffer,"m");
+							strcat(buffer,"your turn!!*");
+							n = write(fd0,buffer,256);
+						}
+					}
+					if(connections[a] == fd0)
+					{
+						if(fd1 > 0)
+						{
+							strcat(buffer,"m");
+							strcat(buffer,"your turn!!*");
+							n = write(fd1,buffer,256);
+						}
+					}
 				}
 				if(t== -1)
 				{
 					strcat(buffer,"m");
-					strcat(buffer,"invalid first move");
+					strcat(buffer,"invalid first move*");
 					n = write(connections[a],buffer,256);
 				}
 				if(t== -2)
 				{
 					strcat(buffer,"m");
-					strcat(buffer,"invalid second move");
+					strcat(buffer,"invalid second move*");
 					n = write(connections[a],buffer,256);
 				}
 				if(t== -3)
 				{
 					strcat(buffer,"m");
-					strcat(buffer,"not your move");
+					strcat(buffer,"not your move*");
 					n = write(connections[a],buffer,256);
 				}
-
-
 			}
 		}
 		FD_ZERO(&readfds);

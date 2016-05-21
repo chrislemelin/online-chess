@@ -60,8 +60,7 @@ int main(int argc, char *argv[])
       int num_readable = select(sockfd+1, &readfds, NULL,NULL, NULL);
       if(FD_ISSET(fileno(stdin),&readfds))
       {
-        printf("write from keyboard");
-        bzero(buffer,256);
+//        bzero(buffer,256);
         fgets(buffer,256,stdin);
     		n = write(sockfd,buffer,strlen(buffer));
         if (n < 0)
@@ -71,26 +70,33 @@ int main(int argc, char *argv[])
       {
     		bzero(buffer,256);
         n = read(sockfd,buffer,256);
-        if (buffer[0] == 'b')
-        {
-          memmove(buffer, buffer+1, strlen(buffer));
-          drawBoard(buffer);
-        //  printf("\033[%d;%dH", 0,0);
-          //break;
-        }
-        if (buffer[0] == 'm')
-        {
-          memmove(buffer, buffer+1, strlen(buffer));
-          printf("%s\n",buffer);
-        }
 
-        if (buffer[0] == '0')
+        char * delim = "*";
+        char * token;
+        token = strtok(buffer,delim);
+        while(token)
         {
-          close(sockfd);
-          printf("connection severed\n");
-          break;
-        }
+          if (token[0] == 'b')
+          {
+            memmove(token, token+1, strlen(token));
+            drawBoard(token);
+          //  printf("\033[%d;%dH", 0,0);
+            //break;
+          }
+          if (token[0] == 'm')
+          {
+            memmove(token, token+1, strlen(token));
+            printf("%s\n",buffer);
+          }
 
+          if (token[0] == '0')
+          {
+            close(sockfd);
+            printf("connection severed\n");
+            break;
+          }
+          token = strtok(0,delim);
+        }
        }
        FD_SET(fileno(stdin),&readfds);
        FD_SET(sockfd,&readfds);

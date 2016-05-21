@@ -24,6 +24,7 @@ int drawBoard(struct board *);
 int initBoard(struct board *);
 int occupied(struct board *, int, int);
 
+/*
 int main(int argc, char * argv[])
 {
 	clear();
@@ -98,7 +99,7 @@ int main(int argc, char * argv[])
 	}
 	deleteBoard(boardy);
 }
-
+*/
 
 char * boardToString(struct board * b)
 {
@@ -282,7 +283,6 @@ int initBoard(struct board *b)
 	addPiece(b,ROOK,7,7,0);
 	addPiece(b,ROOK,0,7,0);
 
-
 	addPiece(b,KNIGHT,1,0,1);
 	addPiece(b,KNIGHT,6,0,1);
 	addPiece(b,KNIGHT,1,7,0);
@@ -296,12 +296,10 @@ int initBoard(struct board *b)
 	addPiece(b,QUEEN,4,7,0);
 	addPiece(b,QUEEN,4,0,1);
 
-
 	addPiece(b,KING,3,7,0);
 	addPiece(b,KING,3,0,1);
 	return 0;
 }
-
 
 /* returns number of player of the piece at the position x,y
  * returns -1 if no piece is at the position
@@ -334,7 +332,6 @@ struct piece * getSpace(struct board * b, int x , int y)
 		{
 			return b->pieces[a];
 		}
-
 	}
 	return NULL;
 }
@@ -347,7 +344,6 @@ int getOrder(struct board * b, struct piece * p)
 		{
 			return a;
 		}
-
 	}
 	return 0;
 }
@@ -355,12 +351,8 @@ int getOrder(struct board * b, struct piece * p)
 
 int updateAllMovesSim(struct board * b)
 {
-	struct piece * k1 = NULL;
-	struct piece * k2 = NULL;
 	for(int a = 0 ; a< b->s_pieces; a++)
 	{
-		// saves kings for later, all other pieces must
-		// be updated BEFORE the king
 		if(b->pieces[a]->p == KING)
 		{
 			continue;
@@ -387,7 +379,6 @@ int updateAllMoves(struct board * b)
 		}
 		updateMoves(b,b->pieces[a]);
 	}
-
 	for(int a = 0 ; a< b->s_pieces; a++)
 	{
 		if(b->pieces[a]->p == ROOK)
@@ -395,7 +386,6 @@ int updateAllMoves(struct board * b)
 			addCastleing(b,b->pieces[a]);
 		}
 	}
-
 	if(k0 != NULL)
 	{
 		for(int a = 0 ; a< b->s_pieces; a++)
@@ -415,7 +405,6 @@ int updateAllMoves(struct board * b)
 			}
 		}
 	}
-
 	if(k1 != NULL)
 	{
 		for(int a = 0 ; a< b->s_pieces; a++)
@@ -440,14 +429,11 @@ int updateAllMoves(struct board * b)
 	{
 		updateMoves(b,k1);
 	}
-	//specialKingMoveCheck(b,k1,k2);
-
 }
 
 int movePiece(struct board * b, struct piece * p, struct pos* move)
 {
-	//if(move->type == 2 || move->type == 3)
-		//return 0;
+
 	printf("2char:%c x:%d y:%d type:%d\n",p->p,p->loc->x,p->loc->y,p->loc->type);
 	fflush(stdout);
 
@@ -459,20 +445,23 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 	fflush(stdout);
 	if(move->taken != NULL)
 	{
-		printf("Rchar:%c x:%d y:%d type:%d\n",move->taken->p,move->taken->loc->x,move->taken->loc->y,move->taken->loc->type);
+		printf("Rchar:%c x:%d y:%d type:%d\n",move->taken->p,
+		move->taken->loc->x,move->taken->loc->y,
+		move->taken->loc->type);
+		fflush(stdout);
 		removePiece(b,move->taken);
 	}
+
 	p->notMoved = 0;
-	printf("4char:%c x:%d y:%d type:%d\n",p->p,p->loc->x,p->loc->y,p->loc->type);
+	printf("4char:%c x:%d y:%d\n",p->p,p->loc->x,p->loc->y);
 	fflush(stdout);
 
 	if(move->type != 4)
 	{
-		printf("5char:%c x:%d y:%d type:%d\n",p->p,p->loc->x,p->loc->y,p->loc->type);
+		printf("5char:%c x:%d y:%d\n",p->p,p->loc->x,p->loc->y);
 		fflush(stdout);
 		free(p->loc);
 		p->loc = makeLoc(move->x,move->y);
-		//printf("type = %d\n",move->type);
 	}
 
 	if(move->type == 4)
@@ -486,8 +475,7 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 	{
 		if(p->player ==0)
 		{
-			p->ghostLoc= makeLoc(move->x, move->y +1);
-			//printf("made ghosty at %d,%d ",move->x, move->y +1);
+			p->ghostLoc= makeLoc(move->x, move->y +1);	//specialKingMoveCheck(b,k1,k2);
 		}
 		else
 		{
@@ -524,17 +512,20 @@ int simCheck(struct board * b, struct piece * p, struct pos * move, struct piece
 		nMove->additionalP = getSpace(nBoard, move->x, move->y);
 	}
  	int temp = getOrder(b, p);
+	int temp1;
 	if(move->taken != NULL)
 	{
-		int temp1 = getOrder(b,move->taken);
+		temp1 = getOrder(b,move->taken);
 		nMove->taken = nBoard->pieces[temp1];
-		printf("taken corrupted here\n");
+		printf("Tchar:%c x:%d y:%d type:%d\n",move->taken->p,move->taken->loc->x,
+		move->taken->loc->y,temp1);
 	}
 	else{
-		move->taken = NULL;
+		nMove->taken = NULL;
 	}
 	printf("char:%c x:%d y:%d type:%d\n",p->p,nBoard->pieces[temp]->
 	loc->x,nBoard->pieces[temp]->loc->y,temp);
+
 	fflush(stdout);
 //	printAllMoves(nBoard);
 	movePiece(nBoard,nBoard->pieces[temp],nMove);
