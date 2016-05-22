@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 				{
 					disconnect(connections, a,&c_connections);
 					printf("closed connection on player %d",a);
-	//				sleep(5);
+					sleep(5);
 					a--;
 					continue;
 				}
@@ -184,42 +184,78 @@ int main(int argc, char *argv[])
 					}
 					if (n < 0)
 						error("ERROR writing to socket");
+
 					bzero(buffer,256);
-					if(connections[a] == fd1)
+
+					int winner  = whoWon(b);
+					if(winner == -1)
 					{
-						if(fd0 > 0)
+						if(connections[a] == fd1)
 						{
-							strcat(buffer,"m");
-							strcat(buffer,"your turn!!*");
-							n = write(fd0,buffer,256);
+							if(fd0 > 0)
+							{
+								strcat(buffer,"m");
+								strcat(buffer,"your turn!!*");
+								n = write(fd0,buffer,256);
+							}
+						}
+						if(connections[a] == fd0)
+						{
+							if(fd1 > 0)
+							{
+								strcat(buffer,"m");
+								strcat(buffer,"your turn!!*");
+								n = write(fd1,buffer,256);
+							}
 						}
 					}
-					if(connections[a] == fd0)
+
+					if(winner == 1)
 					{
-						if(fd1 > 0)
-						{
-							strcat(buffer,"m");
-							strcat(buffer,"your turn!!*");
-							n = write(fd1,buffer,256);
-						}
+						strcat(buffer,"m");
+						strcat(buffer,"you win!!*");
+						n = write(fd1,buffer,256);
+						bzero(buffer,256);
+						strcat(buffer,"m");
+						strcat(buffer,"you lose!!*");
+						n = write(fd0,buffer,256);
 					}
+					if(winner == 0)
+					{
+						strcat(buffer,"m");
+						strcat(buffer,"you win!!*");
+						n = write(fd0,buffer,256);
+						bzero(buffer,256);
+						strcat(buffer,"m");
+						strcat(buffer,"you lose!!*");
+						n = write(fd1,buffer,256);
+					}
+					if(winner == 2)
+					{
+						strcat(buffer,"m");
+						strcat(buffer,"tie!!*");
+						n = write(fd0,buffer,256);
+						n = write(fd1,buffer,256);
+					}
+
+
 				}
 				if(t== -1)
 				{
 					strcat(buffer,"m");
-					strcat(buffer,"invalid first move*");
+					strcat(buffer,"invalid first coordinate*");
 					n = write(connections[a],buffer,256);
 				}
 				if(t== -2)
 				{
 					strcat(buffer,"m");
-					strcat(buffer,"invalid second move*");
+					strcat(buffer,"invalid second coordinate*");
 					n = write(connections[a],buffer,256);
 				}
 				if(t== -3)
 				{
 					strcat(buffer,"m");
-					strcat(buffer,"not your move*");
+					strcat(buffer,"not your turn*");
 					n = write(connections[a],buffer,256);
 				}
 			}
@@ -238,6 +274,7 @@ int main(int argc, char *argv[])
 
 int disconnect(int * list, int a,int * c_connections )
 {
+	write(list[a],"0*",2);
 	close(list[a]);
 	for(int c = a+1; c< *c_connections ;c++)
 	{

@@ -341,7 +341,7 @@ int incheckCheck(struct board * b, struct piece * p, struct pos * m)
 		{
 			if(b->pieces[x]->moves[c]->type == 3)
 				continue;
-			if(equalPos(m, b->pieces[x]->moves[c]) == 1 )
+			if(equalPos(m, b->pieces[x]->moves[c]) == 1)
 			{
 				if(b->pieces[x]->p == KING)
 					return 2;

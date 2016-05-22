@@ -170,7 +170,7 @@ int tryMove(struct board* b,int x1,int y1,int x2,int y2, int player)
 int drawBoard(struct board *b)
 {
 	clear();
-//	printAllMoves(b);
+	printAllMoves(b);
 //	return 0;
 	set_cur_pos(0,20);
 	printf("pieces=%d",b->s_pieces);
@@ -348,7 +348,59 @@ int getOrder(struct board * b, struct piece * p)
 	return 0;
 }
 
+/* return -1 if no winner yet
+ * returns 0 if player 0 wins
+ * returns 1 if player 1 wins
+ * returns 2 if a tie
+ */
+int whoWon(struct board * b)
+{
+	int moves0 = 1;
+	int moves1= 1;
+	struct piece * k0 = NULL;
+	struct piece * k1 = NULL;
 
+	for(int a = 0; a < b->s_pieces; a++)
+	{
+		if(b->pieces[a]->p == KING)
+		{
+			if(b->pieces[a]->player == 0)
+				k0 = b->pieces[a];
+			if(b->pieces[a]->player == 1)
+				k1 = b->pieces[a];
+		}
+		if(b->pieces[a]->player == 0 && b->pieces[a]->s_validmoves > 0)
+		{
+			moves0 = 0;
+			continue;
+		}
+	}
+
+	for(int a = 0; a < b->s_pieces; a++)
+	{
+		if(b->pieces[a]->player == 1 && b->pieces[a]->s_validmoves > 0)
+		{
+			moves1 = 0;
+			break;
+		}
+	}
+
+	int check0 = incheckCheck(b,k0,k0->loc);
+	int check1 = incheckCheck(b,k1,k1->loc);
+
+	if(moves0 && check0 == 1)
+		return 1;
+	if(moves1 && check1 == 1)
+		return 0;
+	if(moves0 || moves1)
+		return 2;
+	return -1;
+
+}
+
+/* returns 0 if not in check
+ * returns 1 if in check
+ */
 int updateAllMovesSim(struct board * b)
 {
 	for(int a = 0 ; a< b->s_pieces; a++)
@@ -429,6 +481,8 @@ int updateAllMoves(struct board * b)
 	{
 		updateMoves(b,k1);
 	}
+	specialKingMoveCheck(b,k0, k1);
+
 }
 
 int movePiece(struct board * b, struct piece * p, struct pos* move)

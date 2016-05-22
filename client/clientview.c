@@ -92,7 +92,19 @@ int drawBoard(char * data)
 			break;
 		a++;
 	}
+}
 
+int printMessage(char * message)
+{
 	set_cur_pos(20,0);
+	printf(CLEARLINE);
+	set_cur_pos(20,0);
+  printf("%s\n", message);
+}
+int clearInput()
+{
+	set_cur_pos(21,0);
+	printf(CLEARLINE);
+	set_cur_pos(21,0);
 	put('~');
 }

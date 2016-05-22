@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
       int num_readable = select(sockfd+1, &readfds, NULL,NULL, NULL);
       if(FD_ISSET(fileno(stdin),&readfds))
       {
-//        bzero(buffer,256);
+        bzero(buffer,256);
         fgets(buffer,256,stdin);
     		n = write(sockfd,buffer,strlen(buffer));
         if (n < 0)
@@ -76,29 +76,30 @@ int main(int argc, char *argv[])
         token = strtok(buffer,delim);
         while(token)
         {
+          printf("%s\n",token );
           if (token[0] == 'b')
           {
             memmove(token, token+1, strlen(token));
             drawBoard(token);
-          //  printf("\033[%d;%dH", 0,0);
-            //break;
           }
           if (token[0] == 'm')
           {
             memmove(token, token+1, strlen(token));
-            printf("%s\n",buffer);
+            printMessage(token);
           }
 
           if (token[0] == '0')
           {
             close(sockfd);
-            printf("connection severed\n");
-            break;
+            printMessage("connection closed");
+            return 1;
           }
           token = strtok(0,delim);
         }
        }
+       clearInput();
        FD_SET(fileno(stdin),&readfds);
        FD_SET(sockfd,&readfds);
+
      }
 }
