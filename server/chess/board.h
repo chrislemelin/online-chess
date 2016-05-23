@@ -1,7 +1,6 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
 #define YELLOW  "\x1b[33m"
@@ -17,7 +16,9 @@ struct board
 	int s_pieces;
 	int currentPlayer;
 	struct piece * promotionPawn;
+	int players;
 }board;
+
 
 struct piece * getSpace(struct board * b, int x , int y);
 int checkSpace(struct board * b, int x , int y, int g, int player);
@@ -29,6 +30,8 @@ int drawBoard(struct board *b);
 int initBoard(struct board *b);
 char * boardToString(struct board * b);
 int whoWon(struct board * b);
+int checkPromotion(struct board * b);
+int promote(struct board * b,char c);
 
 
 

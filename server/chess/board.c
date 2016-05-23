@@ -6,7 +6,6 @@
 #include "display.h"
 #include "board.h"
 
-
 #define BOARD_HEIGHT 8
 #define BOARD_WIDTH 8
 #define DISPLAY_X 10
@@ -16,13 +15,9 @@
 #define BOARD_VERT '|'
 #define BOARD_CORN '+'
 
-
-int movePiece(struct board * b, struct piece * p, struct pos* move);
+int movePiece(struct board *, struct piece *, struct pos *);
 int simCheck(struct board * b, struct piece * p,struct pos * move, struct piece * k);
 
-int drawBoard(struct board *);
-int initBoard(struct board *);
-int occupied(struct board *, int, int);
 
 /*
 int main(int argc, char * argv[])
@@ -342,6 +337,8 @@ int initBoard(struct board *b)
 
 	addPiece(b,KING,3,7,0);
 	addPiece(b,KING,3,0,1);
+
+	updateAllMoves(b);
 	return 0;
 }
 
