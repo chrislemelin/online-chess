@@ -7,7 +7,7 @@
 #include "board.h"
 
 
-#define BOARD_LENGTH 8
+#define BOARD_HEIGHT 8
 #define BOARD_WIDTH 8
 #define DISPLAY_X 10
 #define DISPLAY_Y 35
@@ -127,7 +127,8 @@ int printAllMoves(struct board * b)
 	}
 }
 
-/* returns 1 if valid
+/* returns 2 if the move caused a promotion
+ * returns 1 if valid
  * returns -1 if invalid m1
  * returns -2 if invalid m2
  * returns -3 if not your turn
@@ -152,18 +153,60 @@ int tryMove(struct board* b,int x1,int y1,int x2,int y2, int player)
 
 	struct pos * m3 = validMoveForPiece(mover,m2);
 
+	free(m1);
+	free(m2);
+
 	if(m3 != NULL)
 	{
 		movePiece(b, mover, m3);
 		updateAllMoves(b);
+
+		if(checkPromotion(b))
+		{
+			b->currentPlayer = (b->currentPlayer+1)%2;
+			return 2;
+		}
 		return 1;
 	}
 	else
 	{
 		return -2;
 	}
-	free(m1);
-	free(m2);
+}
+
+int checkPromotion(struct board * b)
+{
+	for(int a = 0; a< b->s_pieces;a++)
+	{
+		if(b->pieces[a]->p == PAWN && b->pieces[a]->player == 0
+			 && b->pieces[a]->loc->y == 0)
+		{
+			b->promotionPawn = b->pieces[a];
+			return 1;
+		}
+		if(b->pieces[a]->p == PAWN && b->pieces[a]->player == 1
+			 && b->pieces[a]->loc->y== BOARD_HEIGHT-1)
+		{
+			b->promotionPawn = b->pieces[a];
+			return 1;
+		}
+	}
+	b->promotionPawn = NULL;
+	return 0;
+}
+
+int promote(struct board * b,char c)
+{
+	if(c == QUEEN || c == BISHOP || c == KNIGHT || c == ROOK)
+	{
+		int x = b->promotionPawn->loc->x;
+		int y = b->promotionPawn->loc->y;
+		removePiece(b,b->promotionPawn);
+		b->promotionPawn = NULL;
+		addPiece(b, c, x, y, b->currentPlayer);
+		return 1;
+	}
+	return 0;
 
 }
 
@@ -178,7 +221,7 @@ int drawBoard(struct board *b)
 
 	for (int x = 0 ; x < BOARD_WIDTH; x++)
 	{
-		for(int y = 0 ; y < BOARD_LENGTH;y++)
+		for(int y = 0 ; y < BOARD_HEIGHT;y++)
 		{
 			set_cur_pos(y*2+DISPLAY_Y+2, 4*x+DISPLAY_X);
 			put(BOARD_VERT);
@@ -194,13 +237,13 @@ int drawBoard(struct board *b)
 			put(BOARD_HOR);
 
 		}
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X);
+		set_cur_pos(BOARD_HEIGHT*2+DISPLAY_Y,4*x+DISPLAY_X);
 		put(BOARD_HOR);
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+1);
+		set_cur_pos(BOARD_HEIGHT*2+DISPLAY_Y,4*x+DISPLAY_X+1);
 		put(BOARD_HOR);
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+2);
+		set_cur_pos(BOARD_HEIGHT*2+DISPLAY_Y,4*x+DISPLAY_X+2);
 		put(BOARD_HOR);
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+3);
+		set_cur_pos(BOARD_HEIGHT*2+DISPLAY_Y,4*x+DISPLAY_X+3);
 		put(BOARD_HOR);
 		set_cur_pos(DISPLAY_Y,4*x+DISPLAY_X);
 		put(BOARD_HOR);
@@ -218,11 +261,11 @@ int drawBoard(struct board *b)
 
 		set_cur_pos(DISPLAY_Y,DISPLAY_X);
 		put(BOARD_CORN);
-		set_cur_pos(DISPLAY_Y+BOARD_LENGTH*2,DISPLAY_X);
+		set_cur_pos(DISPLAY_Y+BOARD_HEIGHT*2,DISPLAY_X);
 		put(BOARD_CORN);
 		set_cur_pos(DISPLAY_Y,DISPLAY_X+BOARD_WIDTH*4);
 		put(BOARD_CORN);
-		set_cur_pos(DISPLAY_Y+BOARD_LENGTH*2,DISPLAY_X+BOARD_WIDTH*4);
+		set_cur_pos(DISPLAY_Y+BOARD_HEIGHT*2,DISPLAY_X+BOARD_WIDTH*4);
 		put(BOARD_CORN);
 	}
 	for(int a = 0; a < b->s_pieces;a++)
@@ -272,6 +315,7 @@ int initBoard(struct board *b)
 {
 	b->s_pieces = 0;
 	b->currentPlayer = 0;
+	b->promotionPawn = NULL;
 	for(int a = 0; a < BOARD_WIDTH;a++)
 	{
 		printf("%d\n",a);
@@ -310,7 +354,7 @@ int checkSpace(struct board * b, int x , int y, int g, int player)
 {
 	if(x < 0 || x >= BOARD_WIDTH)
 		return -2;
-	if(y < 0 || y >= BOARD_LENGTH)
+	if(y < 0 || y >= BOARD_HEIGHT)
 		return -2;
 
 	for(int a = 0; a < b->s_pieces;a++)

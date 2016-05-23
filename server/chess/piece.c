@@ -231,7 +231,10 @@ int updateMoves(struct board *b ,struct piece *p)
 		}
 
 		if (checkSpace(b,p->loc->x,p->loc->y+temp,0,0) == -1)
+		{
 			addMove(b,p,p->loc->x,p->loc->y+temp,opp);
+			p->moves[0]->type = 3;
+		}
 		if (checkSpace(b,p->loc->x+1,p->loc->y+temp,1,p->player) != -1)
 			addMove(b,p,p->loc->x+1,p->loc->y+temp,opp);
 		if (checkSpace(b,p->loc->x-1,p->loc->y+temp,1,p->player) != -1)
@@ -339,7 +342,7 @@ int incheckCheck(struct board * b, struct piece * p, struct pos * m)
 
 		for(int c = 0; c<b->pieces[x]->s_moves;c++)
 		{
-			if(b->pieces[x]->moves[c]->type == 3)
+			if(b->pieces[x]->moves[c]->type == 3 || b->pieces[x]->moves[c]->type == 6)
 				continue;
 			if(equalPos(m, b->pieces[x]->moves[c]) == 1)
 			{

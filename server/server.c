@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 				n = read(connections[a],buffer,255);
 				if (n < 0)
 					error("ERROR reading from socket");
-				if(buffer[0] == 'q')
+				if(buffer == 'quit\n')
 				{
 					disconnect(connections, a,&c_connections);
 					printf("closed connection on player %d",a);
@@ -145,8 +145,35 @@ int main(int argc, char *argv[])
 					a--;
 					continue;
 				}
-				char *end;
+				if(b->promotionPawn != NULL)
+				{
+					if(b->currentPlayer == 0 && (connections[a] == fd0) ||
+						b->currentPlayer == 1 && (connections[a] == fd1))
+					{
+					int action = promote(b,buffer[0]);
+					if(action)
+					{
+						b->currentPlayer = (b->currentPlayer+1)%2;
+					}
+					bzero(buffer,256);
+					char * temp = boardToString(b);
+					strcat(buffer,"b");
+					strcat(buffer,temp);
+					strcat(buffer,"*");
+					if(fd0 > 0 )
+					{
+							n = write(fd0,buffer,256);
+					}
+					if(fd1 > 0)
+					{
+							n = write(fd1,buffer,256);
+					}
 
+					}
+					continue;
+				}
+
+				char *end;
 				int x1 = strtol(buffer ,&end,10);
 				int y1 = strtol(end ,&end,10);
 				int x2 = strtol(end ,&end,10);
@@ -168,7 +195,7 @@ int main(int argc, char *argv[])
 				//sleep(5);
 
 				bzero(buffer,256);
-				if(t== 1)
+				if(t== 1 || t ==2)
 				{
 					char * temp = boardToString(b);
 					strcat(buffer,"b");
@@ -182,9 +209,17 @@ int main(int argc, char *argv[])
 					{
 							n = write(fd1,buffer,256);
 					}
+
+					if(t==2)
+					{
+						bzero(buffer,256);
+						strcat(buffer,"m");
+						strcat(buffer,"promote!!*");
+						n = write(connections[a],buffer,256);
+					}
+
 					if (n < 0)
 						error("ERROR writing to socket");
-
 					bzero(buffer,256);
 
 					int winner  = whoWon(b);

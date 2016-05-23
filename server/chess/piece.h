@@ -20,6 +20,7 @@ struct pos
 
 	normal = 0
 	capturing = 1
+	non-caturing move (pawn moving forward) = 3
 	rooking = 4
 	enpassant = 5
 	double move = 6
