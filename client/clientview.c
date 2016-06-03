@@ -1,8 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include "clientview.h"
 #include "display.h"
+
+#define EON (char)11
 
 #define BOARD_LENGTH 8
 #define BOARD_WIDTH 8
@@ -96,15 +103,55 @@ int drawBoard(char * data)
 
 int printMessage(char * message)
 {
-	set_cur_pos(20,0);
+	set_cur_pos(18+DISPLAY_Y,0);
 	printf(CLEARLINE);
-	set_cur_pos(20,0);
+	set_cur_pos(18+DISPLAY_Y,0);
   printf("%s\n", message);
 }
 int clearInput()
 {
-	set_cur_pos(21,0);
+	set_cur_pos(19+DISPLAY_Y,0);
 	printf(CLEARLINE);
-	set_cur_pos(21,0);
+	set_cur_pos(19+DISPLAY_Y,0);
 	put('~');
+}
+
+int drawLobby()
+{
+	clear();
+	set_cur_pos(DISPLAY_Y,DISPLAY_X);
+	printf("LOBBY:\n");
+
+	char tempS[2];
+	tempS[0] = EON;
+	tempS[1] = '\0';
+
+	char * delim = tempS;
+	char * token;
+	token = strtok(lobby,delim);
+	int a = 0;
+	while(token)
+	{
+
+		if(token[0] == '0')
+			printf(BLUE);
+		else
+			printf(RED);
+		memmove(token, token+1, strlen(token));
+		set_cur_pos(a+DISPLAY_Y+1, DISPLAY_X);
+		if(strlen(token) !=0)
+			printf("%s\n",token);
+		token = strtok(0,delim);
+		a++;
+	}
+	printf(RESET);
+}
+
+int updateLobby(char * nLobby)
+{
+  lobby = nLobby;
+}
+int updateBoard(char * nBoard)
+{
+	board = nBoard;
 }

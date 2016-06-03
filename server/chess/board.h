@@ -37,4 +37,5 @@ int promote(struct board * b,char c);
 
 
 
+
 #endif

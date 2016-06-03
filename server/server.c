@@ -12,13 +12,14 @@
 #include "chess/display.h"
 #include "chess/board.h"
 #include "player.h"
+#include "server.h"
 
 #define _POSIX_C_SOURCE 1
 
 const int WAIT = 50;
 const int MAXP = 10;
 
-int disconnect(int * list, int a,int * c_connections );
+#define EOM (char)10
 
 
 void error(const char *msg)
@@ -34,8 +35,8 @@ int main(int argc, char *argv[])
 
 
 	struct player ** players = malloc (sizeof(struct player) *MAXP);
-	int c_connections = 0;
-	int a_connections = 0;
+	int s_players = 0;
+	int a_players = 0;
 
 	int num_readable;
 	int fd_stdin = fileno(stdin);
@@ -76,8 +77,8 @@ int main(int argc, char *argv[])
 		//drawBoard(b);
 
 		printf("looking for keyboard\n");
-		num_readable = select(sockfd+1+a_connections , &readfds, NULL,NULL, NULL);
-		printf("%d\n",sockfd+1+a_connections);
+		num_readable = select(sockfd+1+a_players , &readfds, NULL,NULL, NULL);
+		printf("%d\n",sockfd+1+a_players);
 		if (num_readable == -1)
 			error("ERROR select failed");
 		if(FD_ISSET(sockfd,&readfds))
@@ -85,23 +86,20 @@ int main(int argc, char *argv[])
 			newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
 			if (newsockfd < 0)
 				error("ERROR on accept");
-			printf("connected to player %d: \n",c_connections);
+			printf("connected to player %d: \n",s_players);
 
 			sleep(1);
 
 			bzero(buffer,256);
 
-			if(addPlayer(players,&c_connections,MAXP, newsockfd) > 0)
+			if(addPlayer(players,&s_players,MAXP, newsockfd) > 0)
 			{
-				a_connections++;
-				printf("fd:%d\n", players[c_connections-1]->fd);
+				a_players++;
+				printf("fd:%d\n", players[s_players-1]->fd);
 				fflush(stdout);
+				//players[s_players-1]->name = "test";
 			}
-			char * temp = boardToString(players[c_connections-1]->game);
-			strcat(buffer,"b");
-			strcat(buffer,temp);
-			strcat(buffer,"*");
-			write(newsockfd,buffer,256);
+			sendMessage(players[s_players-1]->fd,'m', "Enter Your User Name");
 
 //			write(newsockfd,"connection esablished",30);
 
@@ -123,9 +121,9 @@ int main(int argc, char *argv[])
 			if (strcmp(buffer,"q\n") == 0)
 			{
 				printf("Exited Correctly\n");
-				for(int a = 0; a<c_connections;a++)
+				for(int a = 0; a<s_players;a++)
 				{
-					n = write(players[a]->fd,"0*",2);
+					sendMessage(players[a]->fd, '0', "");
 				}
 				close(sockfd);
 				return 0;
@@ -133,7 +131,7 @@ int main(int argc, char *argv[])
 			printf("not valid command enter q to exit\n%s_%d\n",buffer,fd_stdin);
 			fflush(stdout);
 		}
-		for(int a = 0; a<c_connections;a++)
+		for(int a = 0; a<s_players;a++)
 		{
 
 			if(FD_ISSET(players[a]->fd, &readfds))
@@ -144,18 +142,85 @@ int main(int argc, char *argv[])
 					error("ERROR reading from socket");
 				if( strcmp(buffer,"quit\n") == 0)
 				{
-					//disconnect(connections, a,&c_connections);
-					printf("closed connection on player %d",a);
-					sleep(5);
+					removePlayer(players,&s_players,a);
+					printf("closed connection on player %d\n",a);
 					a--;
 					continue;
 				}
+				if(players[a]->name == NULL)
+				{
+					char * tempS = malloc(20);
+					strncpy(tempS,buffer,20);
+					if(strcmp(tempS,"") !=0)
+					{
+						printf("name is %s size: %d\n",tempS,strlen(buffer));
+						players[a]->name = tempS;
+						char * temppy1 =playerListToString(players, s_players);
+						printf("sent message :%s:\n",temppy1 );
+						//sendMessage(players[a]->fd,'l',temppy1);
+						sendMessageAll(players,s_players,'l',temppy1);
+					}
+					else
+					{
+						sendMessage(players[a]->fd,'m',"not a valid username");
+					}
+					continue;
+				}
+
+				if(players[a]->game == NULL)
+				{
+					char tempS[2];
+					tempS[0] = ' ';
+					tempS[1] = '\0';
+					char * token;
+					token = strtok(buffer,tempS);
+					if(strcmp(token,"play")==0)
+					{
+						token = strtok(0,tempS);
+						struct player * opp = findPlayer(players,s_players,token);
+						if(opp!=NULL)
+						{
+							char temp[50] = "";
+							strcat(temp,players[a]->name);
+							strcat(temp," has challenege you, Y/N");
+							if(players[a]->challengee != NULL)
+							{
+								players[a]->challengee->challenger = NULL;
+								sendMessage(players[a]->challengee->fd,'m',"opponent has canceled request");
+							}
+							players[a]->challengee = opp;
+							opp->challenger = players[a];
+							printf("challenge %s to %s",players[a]->name, opp->name);
+							sendMessage(opp->fd,'m',temp);
+						}
+						else
+						{
+							sendMessage(players[a]->fd,'m',"not a valid player");
+						}
+					}
+					else if((strcasecmp(token,"Y") == 0 || strcasecmp(token,"yes") == 0)
+						&& players[a]->challenger != NULL)
+						{
+							printf("making game\n" );
+						 	startGame(players[a],players[a]->challenger);
+							continue;
+						}
+					else if((strcasecmp(token,"N") == 0 || strcasecmp(token,"no") == 0)
+						&& players[a]->challenger != 0)
+						{
+							sendMessage(players[a]->challenger->fd,'m',"play request denied");
+							players[a]->challenger->challengee = NULL;
+							players[a]->challenger = NULL;
+						}
+
+
+				}
+				if(players[a]->game == NULL)
+					continue;
+
 				if(players[a]->game->currentPlayer != players[a]->playerGameId)
 				{
-					bzero(buffer,256);
-					strcat(buffer,"m");
-					strcat(buffer,"not your turn!!*");
-					n = write(players[a]->fd,buffer,256);
+				 sendMessage(players[a]->fd, 'm', "not your turn!!");
 					continue;
 				}
 
@@ -167,26 +232,20 @@ int main(int argc, char *argv[])
 						players[a]->game->currentPlayer = (players[a]->game->currentPlayer+1)%2;
 						bzero(buffer,256);
 						char * temp = boardToString(players[a]->game);
-						strcat(buffer,"b");
-						strcat(buffer,temp);
-						strcat(buffer,"*");
 
-						n = write(players[a]->fd,buffer,256);
+						sendMessage(players[a]->fd, 'b', temp);
 						if(players[a]->opp != NULL)
 						{
-								n = write(players[a]->opp->fd,buffer,256);
+								sendMessage(players[a]->opp->fd, 'b', temp);
 						}
 					}
 					else
 					{
-						printf("not a valid promotion*\n");
-						bzero(buffer,256);
-						strcat(buffer,"m");
-						strcat(buffer,"not a valid promotion*");
-						n = write(players[a]->fd,buffer,256);
+						sendMessage(players[a]->fd, 'm', "not a valid promotion");
 					}
 					continue;
 				}
+
 
 				char *end;
 				int x1 = strtol(buffer ,&end,10);
@@ -208,22 +267,22 @@ int main(int argc, char *argv[])
 				if(t== 1 || t ==2)
 				{
 					char * temp = boardToString(players[a]->game);
-					strcat(buffer,"b");
+	/*				strcat(buffer,"b");
 					strcat(buffer,temp);
 					strcat(buffer,"*");
-
 					n = write(players[a]->fd,buffer,256);
+*/
+					sendMessage(players[a]->fd,'b', temp);
+
 					if(players[a]->opp != NULL)
 					{
-						n = write(players[a]->opp->fd,buffer,256);
+						sendMessage(players[a]->fd, 'b', temp);
+
 					}
 
 					if(t==2)
 					{
-						bzero(buffer,256);
-						strcat(buffer,"m");
-						strcat(buffer,"promote!!*");
-						n = write(players[a]->fd,buffer,256);
+						sendMessage(players[a]->fd, 'm', "promote!!");
 					}
 
 					if (n < 0)
@@ -235,44 +294,30 @@ int main(int argc, char *argv[])
 					{
 						if(players[a]->opp != NULL)
 						{
-								strcat(buffer,"m");
-								strcat(buffer,"your turn!!*");
-								n = write(players[a]->opp->fd,buffer,256);
+								sendMessage(players[a]->opp->fd, 'm', "your turn!!");
 						}
 					}
 
 					else if(winner == 2)
 					{
-						strcat(buffer,"m");
-						strcat(buffer,"tie!!*");
-						n = write(players[a]->fd,buffer,256);
+						sendMessage(players[a]->fd, 'm', "Tie!!!");
 						if(players[a]->opp != NULL)
-							n = write(players[a]->opp->fd,buffer,256);
+							sendMessage(players[a]->opp->fd, 'm', "Tie!!!");
 					}
 					else if(winner == players[a]->playerGameId)
 					{
-						strcat(buffer,"m");
-						strcat(buffer,"you win!!*");
-						n = write(players[a]->fd,buffer,256);
-						bzero(buffer,256);
+						sendMessage(players[a]->fd, 'm', "You Win!!!");
 						if(players[a]->opp != NULL)
 						{
-							strcat(buffer,"m");
-							strcat(buffer,"you lose!!*");
-							n = write(players[a]->opp->fd,buffer,256);
+							sendMessage(players[a]->opp->fd, 'm', "You Lose!!!");
 						}
 					}
 					else
 					{
-						strcat(buffer,"m");
-						strcat(buffer,"you lose!!*");
-						n = write(players[a]->fd,buffer,256);
-						bzero(buffer,256);
+						sendMessage(players[a]->fd, 'm', "You Lose!!!");
 						if(players[a]->opp != NULL)
 						{
-							strcat(buffer,"m");
-							strcat(buffer,"you win!!*");
-							n = write(players[a]->opp->fd,buffer,256);
+							sendMessage(players[a]->opp->fd, 'm', "You Win!!!");
 						}
 					}
 
@@ -280,28 +325,19 @@ int main(int argc, char *argv[])
 				}
 				if(t== -1)
 				{
-					strcat(buffer,"m");
-					strcat(buffer,"invalid first coordinate*");
-					n = write(players[a]->fd,buffer,256);
+					sendMessage(players[a]->fd, 'm', "Invalid First Coordinate");
 				}
 				if(t== -2)
 				{
-					strcat(buffer,"m");
-					strcat(buffer,"invalid second coordinate*");
-					n = write(players[a]->fd,buffer,256);
-				}
-				if(t== -3)
-				{
-					strcat(buffer,"m");
-					strcat(buffer,"not your turn*");
-					n = write(players[a]->fd,buffer,256);
+					sendMessage(players[a]->fd, 'm', "Invalid Second Coordinate");
+
 				}
 			}
 		}
 		FD_ZERO(&readfds);
 		FD_SET(fileno(stdin),&readfds);
 		FD_SET(sockfd,&readfds);
-		for(int a = 0 ; a<c_connections;a++)
+		for(int a = 0 ; a<s_players;a++)
 		{
 			printf("a :%d ",players[a]->fd);
 			fflush(stdout);
@@ -309,15 +345,36 @@ int main(int argc, char *argv[])
 		}
 	}
 }
-
-int disconnect(int * list, int a,int * c_connections )
+/*
+int disconnect(int * list, int a,int * s_players )
 {
 	write(list[a],"0*",2);
 	close(list[a]);
-	for(int c = a+1; c< *c_connections ;c++)
+	for(int c = a+1; c< *s_players ;c++)
 	{
 		printf("c:%d \n",list[c]);
 		list[c-1] = list[c];
 	}
-	*c_connections = *c_connections-1;
+	*s_players = *s_players-1;
+}
+*/
+
+int sendMessage(int fd, char type, char * message)
+{
+	char buffer[256];
+	buffer[0] = type;
+	buffer[1] = '\0';
+	strcat(buffer,message);
+	int temp = strlen(buffer);
+	buffer[temp] = EOM;
+	buffer[temp+1] = '\0';
+	write(fd,buffer,256);
+}
+
+int sendMessageAll(struct player ** players, int s_players, char type, char * message)
+{
+	for(int a = 0; a< s_players;a++)
+	{
+		sendMessage(players[a]->fd,type,message);
+	}
 }

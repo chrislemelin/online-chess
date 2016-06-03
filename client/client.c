@@ -10,6 +10,8 @@
 #include "clientview.h"
 #include "display.h"
 
+const char EOM = (char)10;
+
 
 void error(const char *msg)
 {
@@ -54,6 +56,8 @@ int main(int argc, char *argv[])
     FD_SET(fileno(stdin),&readfds);
     FD_SET(sockfd,&readfds);
 
+    int inGame = 0;
+
     while(1)
   	{
   //    printf("Please enter the message: ");
@@ -62,6 +66,7 @@ int main(int argc, char *argv[])
       {
         bzero(buffer,256);
         fgets(buffer,256,stdin);
+        buffer[strlen(buffer)-1] = '\0';
     		n = write(sockfd,buffer,strlen(buffer));
         if (n < 0)
     			error("ERROR writing to socket");
@@ -71,28 +76,54 @@ int main(int argc, char *argv[])
     		bzero(buffer,256);
         n = read(sockfd,buffer,256);
 
-        char * delim = "*";
+        char tempS[2];
+        tempS[0] = EOM;
+        tempS[1] = '\0';
+
+        char * delim = tempS;
         char * token;
         token = strtok(buffer,delim);
         while(token)
         {
-          printf("%s\n",token );
+          //printf("%s\n",token );
           if (token[0] == 'b')
           {
             memmove(token, token+1, strlen(token));
-            drawBoard(token);
+            updateBoard(token);
+            if(inGame)
+            {
+              drawBoard();
+            }
           }
-          if (token[0] == 'm')
+          else if (token[0] == 'm')
           {
             memmove(token, token+1, strlen(token));
             printMessage(token);
           }
+          else if (token[0] == 'l')
+          {
+            memmove(token, token+1, strlen(token));
+            updateLobby(token);
+            //drawLobby();
+            if(!inGame)
+            {
+              drawLobby();
+            }
 
-          if (token[0] == '0')
+          }
+          else if (token[0] == '0')
           {
             close(sockfd);
             printMessage("connection closed");
             return 1;
+          }
+          else if (token[0] == 'g')
+          {
+            inGame = 1;
+          }
+          else if (token[0] == 'd')
+          {
+            inGame = 0;
           }
           token = strtok(0,delim);
         }
