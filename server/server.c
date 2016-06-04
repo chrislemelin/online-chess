@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 				n = read(players[a]->fd,buffer,255);
 				if (n < 0)
 					error("ERROR reading from socket");
-				if( strcmp(buffer,"quit\n") == 0)
+				if( strcmp(buffer,"quit") == 0)
 				{
 					removePlayer(players,&s_players,a);
 					printf("closed connection on player %d\n",a);
@@ -180,6 +180,22 @@ int main(int argc, char *argv[])
 						struct player * opp = findPlayer(players,s_players,token);
 						if(opp!=NULL)
 						{
+							if(opp == players[a])
+							{
+								sendMessage(players[a]->fd,'m',"you cannot challenege yourself");
+								continue;
+							}
+							if(opp->game != NULL)
+							{
+								sendMessage(players[a]->fd,'m',"that player is busy");
+								continue;
+							}
+							if(players[a]->challenger != NULL)
+							{
+								sendMessage(players[a]->fd,'m',"You already have a challenge pending");
+								continue;
+							}
+
 							char temp[50] = "";
 							strcat(temp,players[a]->name);
 							strcat(temp," has challenege you, Y/N");
@@ -203,6 +219,7 @@ int main(int argc, char *argv[])
 						{
 							printf("making game\n" );
 						 	startGame(players[a],players[a]->challenger);
+							sendMessageAll(players,s_players,'l',playerListToString(players,s_players));
 							continue;
 						}
 					else if((strcasecmp(token,"N") == 0 || strcasecmp(token,"no") == 0)
@@ -276,7 +293,8 @@ int main(int argc, char *argv[])
 
 					if(players[a]->opp != NULL)
 					{
-						sendMessage(players[a]->fd, 'b', temp);
+						printf("sending message to opp");
+						sendMessage(players[a]->opp->fd, 'b', temp);
 
 					}
 

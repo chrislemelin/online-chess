@@ -313,7 +313,7 @@ int initBoard(struct board *b)
 	b->promotionPawn = NULL;
 	for(int a = 0; a < BOARD_WIDTH;a++)
 	{
-		printf("%d\n",a);
+		//printf("%d\n",a);
 		addPiece(b,PAWN,a,6,0);
 		addPiece(b,PAWN,a,1,1);
 	}

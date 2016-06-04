@@ -125,4 +125,5 @@ void startGame(struct player * p1 , struct player * p2)
   char * temp = boardToString(b);
   sendMessage(p1->fd,'b',temp);
   sendMessage(p2->fd,'b',temp);
+  sendMessage(p1->fd,'m',"your turn!!");
 }
