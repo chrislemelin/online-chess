@@ -147,13 +147,16 @@ int main(int argc, char *argv[])
 					a--;
 					continue;
 				}
-				if(players[a]->name == NULL)
+				if(strcmp(players[a]->name, "") == 0)
 				{
 					char * tempS = malloc(20);
 					strncpy(tempS,buffer,20);
-					if(strcmp(tempS,"") !=0)
+					printf("tempS: %s\n",tempS);
+					fflush(stdout);
+					if(strcmp(tempS,"") !=0 && validName(players , s_players, tempS))
 					{
 						printf("name is %s size: %d\n",tempS,strlen(buffer));
+
 						players[a]->name = tempS;
 						char * temppy1 =playerListToString(players, s_players);
 						printf("sent message :%s:\n",temppy1 );
@@ -386,7 +389,12 @@ int sendMessage(int fd, char type, char * message)
 	int temp = strlen(buffer);
 	buffer[temp] = EOM;
 	buffer[temp+1] = '\0';
-	write(fd,buffer,256);
+	int n =write(fd,buffer,256);
+	printf("n : %d message : %s",n,message);
+	if(n <= 0)
+	{
+		printf("dissconedted??\n");
+	}
 }
 
 int sendMessageAll(struct player ** players, int s_players, char type, char * message)

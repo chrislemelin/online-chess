@@ -6,12 +6,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <signal.h>
+
 
 #include "clientview.h"
 #include "display.h"
 
 const char EOM = (char)10;
+int quit = 0;
 
+void signalHandler(int input)
+{
+    printf("%d\n",input );
+    quit = 1;
+}
 
 void error(const char *msg)
 {
@@ -21,6 +29,9 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
+
+    signal(SIGINT, signalHandler);
+    signal(SIGTSTP, signalHandler);
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -64,12 +75,22 @@ int main(int argc, char *argv[])
       int num_readable = select(sockfd+1, &readfds, NULL,NULL, NULL);
       if(FD_ISSET(fileno(stdin),&readfds))
       {
-        bzero(buffer,256);
-        fgets(buffer,256,stdin);
-        buffer[strlen(buffer)-1] = '\0';
-    		n = write(sockfd,buffer,strlen(buffer));
-        if (n < 0)
-    			error("ERROR writing to socket");
+        if(quit)
+        {
+          n = write(sockfd,&"quit",6);
+          printf("closed connection\n");
+          return 1;
+
+        }
+        else
+        {
+          bzero(buffer,256);
+          fgets(buffer,256,stdin);
+          buffer[strlen(buffer)-1] = '\0';
+      		n = write(sockfd,buffer,strlen(buffer));
+          if (n < 0)
+      			error("ERROR writing to socket");
+        }
       }
       if(FD_ISSET(sockfd,&readfds))
       {

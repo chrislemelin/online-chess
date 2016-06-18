@@ -23,7 +23,7 @@ int addPlayer(struct player ** players,int  * s_players, int max_players, int fd
   temp->game = NULL;
   temp->opp = (struct player *)NULL;
   temp->playerGameId = -1;
-  temp->name = NULL;
+  temp->name = "";
   /*
   for(int a = 0;a < *s_players;a++)
   {
@@ -100,16 +100,30 @@ char* playerListToString(struct player ** players, int s_players)
 struct player * findPlayer(struct player ** players, int s_players,char *name )
 {
   struct player * temp = NULL;
-  for(int a ; a< s_players; a++)
+  for(int a = 0; a< s_players; a++)
   {
     if(strcmp(name, players[a]->name)==0)
     {
+      if(players[a]->name != NULL)
+      printf("names checked :%s\n",players[a]->name);
       temp = players[a];
     }
   }
   return temp;
 }
 
+int validName (struct player ** players, int s_players,char *name )
+{
+  int temp = 1;
+  for(int a = 0; a< s_players; a++)
+  {
+    if(strcmp(name, players[a]->name)==0)
+    {
+      temp = 0;
+    }
+  }
+  return temp;
+}
 void startGame(struct player * p1 , struct player * p2)
 {
   struct board * b = malloc(sizeof(struct board));
@@ -120,6 +134,12 @@ void startGame(struct player * p1 , struct player * p2)
   p2->playerGameId = 1;
   p1->opp = p2;
   p2->opp = p1;
+
+  p1->challenger = NULL;
+  p1->challengee = NULL;
+  p2->challenger = NULL;
+  p2->challengee = NULL;
+
   sendMessage(p1->fd,'g',"");
   sendMessage(p2->fd,'g',"");
   char * temp = boardToString(b);

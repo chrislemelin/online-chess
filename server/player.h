@@ -17,6 +17,7 @@ int addPlayer(struct player ** players,int  * s_players, int max_players, int fd
 int removePlayer(struct player ** players, int * s_players, int a);
 struct player * findPlayer(struct player ** players, int s_players,char *name );
 void startGame(struct player * p1 , struct player * p2);
+int validName (struct player ** players, int s_players,char *name);
 
 
 #endif
