@@ -1,4 +1,4 @@
-#include <stdio.h>
+	#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -15,6 +15,7 @@
 #define BOARD_WIDTH 8
 #define DISPLAY_X 2
 #define DISPLAY_Y 2
+#define SQUARESIZE 3
 
 #define BOARD_HOR '_'
 #define BOARD_VERT '|'
@@ -27,6 +28,10 @@
 #define MAGENTA "\x1b[35m"
 #define CYAN    "\x1b[36m"
 #define RESET   "\x1b[0m"
+#define BG_BLACK "\x1b[40m"
+#define BG_WHITE "\x1b[47m"
+
+
 
 int drawBoard(char * data)
 {
@@ -36,50 +41,43 @@ int drawBoard(char * data)
 	{
 		for(int y = 0 ; y < BOARD_LENGTH;y++)
 		{
-			set_cur_pos(y*2+DISPLAY_Y+2, 4*x+DISPLAY_X);
-			put(BOARD_VERT);
-			set_cur_pos(y*2+DISPLAY_Y+1, 4*x+DISPLAY_X);
-			put(BOARD_VERT);
-			set_cur_pos(y*2+DISPLAY_Y, 4*x+DISPLAY_X);
-			put(BOARD_VERT);
-			set_cur_pos(y*2+DISPLAY_Y, 4*x+DISPLAY_X+1);
-			put(BOARD_HOR);
-			set_cur_pos(y*2+DISPLAY_Y, 4*x+DISPLAY_X+2);
-			put(BOARD_HOR);
-			set_cur_pos(y*2+DISPLAY_Y, 4*x+DISPLAY_X+3);
-			put(BOARD_HOR);
+			if(y == 0)
+			{
+				set_cur_pos(y*2-1+DISPLAY_Y,x*SQUARESIZE+DISPLAY_X + 1);
+				printf(RESET );
+				put((char)('a'+x));
+			}
+			if(x == (BOARD_WIDTH-1) )
+			{
+				set_cur_pos(y*2+DISPLAY_Y+1,x*SQUARESIZE+DISPLAY_X + 4);
+				printf(RESET );
+				printf("%d\n",y+1 );
+			}
+
+			char* toPrint;
+			if((x+y)%2 == 0)
+			{
+				printf(BG_BLACK);
+			}
+			else
+			{
+				printf(BG_WHITE);
+			}
+			set_cur_pos(y*2+DISPLAY_Y, x*SQUARESIZE+DISPLAY_X);
+			put(' ');
+			set_cur_pos(y*2+DISPLAY_Y+1, x*SQUARESIZE+DISPLAY_X);
+			put(' ');
+			set_cur_pos(y*2+DISPLAY_Y, x*SQUARESIZE+DISPLAY_X+1);
+			put(' ');
+			set_cur_pos(y*2+DISPLAY_Y+1, x*SQUARESIZE+DISPLAY_X+1);
+			put(' ');
+
+			set_cur_pos(y*2+DISPLAY_Y, x*SQUARESIZE+DISPLAY_X+2);
+			put(' ');
+			set_cur_pos(y*2+DISPLAY_Y+1, x*SQUARESIZE+DISPLAY_X+2);
+			put(' ');
 
 		}
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X);
-		put(BOARD_HOR);
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+1);
-		put(BOARD_HOR);
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+2);
-		put(BOARD_HOR);
-		set_cur_pos(BOARD_LENGTH*2+DISPLAY_Y,4*x+DISPLAY_X+3);
-		put(BOARD_HOR);
-		set_cur_pos(DISPLAY_Y,4*x+DISPLAY_X);
-		put(BOARD_HOR);
-
-		set_cur_pos(x*2+DISPLAY_Y,BOARD_WIDTH*4+DISPLAY_X);
-		put(BOARD_VERT);
-		set_cur_pos(x*2+1+DISPLAY_Y,BOARD_WIDTH*4+DISPLAY_X);
-		put(BOARD_VERT);
-
-		set_cur_pos(DISPLAY_Y-1,4*x+DISPLAY_X+2);
-		put(x+'0');
-		set_cur_pos(x*2+1+DISPLAY_Y,DISPLAY_X+1+BOARD_WIDTH*4);
-		put(x+'0');
-
-
-		set_cur_pos(DISPLAY_Y,DISPLAY_X);
-		put(BOARD_CORN);
-		set_cur_pos(DISPLAY_Y+BOARD_LENGTH*2,DISPLAY_X);
-		put(BOARD_CORN);
-		set_cur_pos(DISPLAY_Y,DISPLAY_X+BOARD_WIDTH*4);
-		put(BOARD_CORN);
-		set_cur_pos(DISPLAY_Y+BOARD_LENGTH*2,DISPLAY_X+BOARD_WIDTH*4);
-		put(BOARD_CORN);
 	}
 	int a = 0;
 	while(1)
@@ -88,17 +86,36 @@ int drawBoard(char * data)
 		int y = data[a*4+3] - '0';
 		int player = data[a*4+1];
 
-		set_cur_pos(y*2+DISPLAY_Y+1,x*4 +DISPLAY_X+1);
+		set_cur_pos(y*2+DISPLAY_Y+1,x*3 +DISPLAY_X+1);
 		if(player == '0')
 			printf(BLUE);
 		else
 			printf(RED);
+		if( (y+x) % 2 == 0)
+		{
+			printf(BG_BLACK );
+
+		}
+		else
+		{
+			printf(BG_WHITE);
+		}
 		put(data[a*4]);
 		printf(RESET);
 		if(data[a*4+4]=='\0')
 			break;
 		a++;
 	}
+/*
+	for (int x = 0 ; x < BOARD_WIDTH; x++)
+	{
+		for(int y = 0 ; y < BOARD_LENGTH;y++)
+		{
+
+		}
+	}
+*/
+
 }
 
 int printMessage(char * message)

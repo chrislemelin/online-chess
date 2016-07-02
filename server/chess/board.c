@@ -551,6 +551,8 @@ int movePiece(struct board * b, struct piece * p, struct pos* move)
 	if(move->type == 4)
 	{
 		free(p->loc);
+		free(move->additionalP->loc);
+		printf("\n move king to %d,%d \n",move->additionalM2->x,move->additionalM2->y );
 		p->loc = 	makeLoc(move->additionalM1->x,move->additionalM1->y);
 		//free(move->additionalP->loc);
 		move->additionalP->loc = 	makeLoc(move->additionalM2->x,move->additionalM2->y);
@@ -610,6 +612,17 @@ int simCheck(struct board * b, struct piece * p, struct pos * move, struct piece
 	movePiece(nBoard,nBoard->pieces[temp],nMove);
 	updateAllMovesSim(nBoard);
 	free(nMove);
+
+	if(move->type == 4)
+	{
+		if(incheckCheck(nBoard,move->additionalP,move->additionalP->loc) == 1)
+		{
+			deleteBoard(nBoard);
+			return 1;
+		}
+		deleteBoard(nBoard);
+		return 0;
+	}
 	if(incheckCheck(nBoard,k,k->loc) == 1)
 	{
 		deleteBoard(nBoard);
