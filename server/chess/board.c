@@ -10,6 +10,7 @@
 #define BOARD_WIDTH 8
 #define DISPLAY_X 10
 #define DISPLAY_Y 35
+#define CURRENTPLAYER '*'
 
 #define BOARD_HOR '_'
 #define BOARD_VERT '|'
@@ -98,7 +99,30 @@ int main(int argc, char * argv[])
 
 char * boardToString(struct board * b)
 {
-	char * tempT = calloc(b->s_pieces*5,1);
+	char * tempT = calloc(b->s_pieces*5+strlen(b->p1->name) + strlen(b->p2->name)+2,1);
+	tempT = strcat(tempT,b->p1->name);
+	int bookmark = strlen(tempT);
+	if(b->currentPlayer == 0)
+	{
+		tempT[bookmark]= CURRENTPLAYER;
+		tempT[bookmark+1] = '\0';
+		bookmark = bookmark +1;
+	}
+	tempT[bookmark]= EON;
+	tempT[bookmark+1] = '\0';
+
+	tempT = strcat(tempT,b->p2->name);
+	bookmark = strlen(tempT);
+	if(b->currentPlayer == 1)
+	{
+		tempT[bookmark]= CURRENTPLAYER;
+		tempT[bookmark+1] = '\0';
+		bookmark = bookmark +1;
+	}
+
+	tempT[bookmark]= EON;
+	tempT[bookmark+1] = '\0';
+
 	char * temp = malloc(5);
 	for(int a = 0 ; a < b->s_pieces ; a++)
 	{

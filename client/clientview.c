@@ -1,4 +1,4 @@
-	#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -6,12 +6,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <signal.h>
 #include "clientview.h"
 #include "display.h"
 
 #define EON (char)11
 
-#define BOARD_LENGTH 8
+#define BOARD_HEIGHT 8
 #define BOARD_WIDTH 8
 #define DISPLAY_X 2
 #define DISPLAY_Y 2
@@ -31,15 +32,15 @@
 #define BG_BLACK "\x1b[40m"
 #define BG_WHITE "\x1b[47m"
 
+static char lastMessage[256];
 
-
-int drawBoard(char * data)
+int drawBoard(char * lastmessage)
 {
 	clear();
 	set_cur_pos(0,0);
 	for (int x = 0 ; x < BOARD_WIDTH; x++)
 	{
-		for(int y = 0 ; y < BOARD_LENGTH;y++)
+		for(int y = 0 ; y < BOARD_HEIGHT;y++)
 		{
 			if(y == 0)
 			{
@@ -79,12 +80,31 @@ int drawBoard(char * data)
 
 		}
 	}
+
+	char delims[2];
+	delims[0] = EON;
+	delims[1] = '\0';
+
+	char * token;
+	token = strtok(lobby,delims);
+	set_cur_pos(DISPLAY_Y+2*(BOARD_HEIGHT-1)+1 , BOARD_WIDTH*SQUARESIZE+DISPLAY_X+5);
+	printf(RESET);
+	printf(BLUE);
+	printf("%s",token);
+
+	token = strtok(0,delims);
+	set_cur_pos(DISPLAY_Y+1 , BOARD_WIDTH*SQUARESIZE+DISPLAY_X+5);
+	printf(RED);
+	printf("%s",token);
+
+	board = strtok(0,delims);
 	int a = 0;
+
 	while(1)
 	{
-		int x = data[a*4+2] - '0';
-		int y = data[a*4+3] - '0';
-		int player = data[a*4+1];
+		int x = board[a*4+2] - '0';
+		int y = board[a*4+3] - '0';
+		int player = board[a*4+1];
 
 		set_cur_pos(y*2+DISPLAY_Y+1,x*3 +DISPLAY_X+1);
 		if(player == '0')
@@ -100,26 +120,26 @@ int drawBoard(char * data)
 		{
 			printf(BG_WHITE);
 		}
-		put(data[a*4]);
+		put(board[a*4]);
 		printf(RESET);
-		if(data[a*4+4]=='\0')
+		if(board[a*4+4]=='\0')
 			break;
 		a++;
 	}
-/*
-	for (int x = 0 ; x < BOARD_WIDTH; x++)
-	{
-		for(int y = 0 ; y < BOARD_LENGTH;y++)
-		{
-
-		}
-	}
-*/
-
+	printMessage(NULL);
 }
 
 int printMessage(char * message)
 {
+	if(message == NULL)
+	{
+
+		message = lastMessage;
+	}
+	else
+	{
+		strcpy(lastMessage, message);
+	}
 	set_cur_pos(18+DISPLAY_Y,0);
 	printf(CLEARLINE);
 	set_cur_pos(18+DISPLAY_Y,0);
@@ -143,13 +163,12 @@ int drawLobby()
 	tempS[0] = EON;
 	tempS[1] = '\0';
 
-	char * delim = tempS;
+	//char * delim = tempS;
 	char * token;
-	token = strtok(lobby,delim);
+	token = strtok(lobby,tempS);
 	int a = 0;
 	while(token)
 	{
-
 		if(token[0] == '0')
 			printf(BLUE);
 		else
@@ -158,10 +177,11 @@ int drawLobby()
 		set_cur_pos(a+DISPLAY_Y+1, DISPLAY_X);
 		if(strlen(token) !=0)
 			printf("%s\n",token);
-		token = strtok(0,delim);
+		token = strtok(0,tempS);
 		a++;
 	}
 	printf(RESET);
+	printMessage(NULL);
 }
 
 int updateLobby(char * nLobby)

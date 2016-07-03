@@ -1,6 +1,9 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include "../player.h"
+
+
 #define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
 #define YELLOW  "\x1b[33m"
@@ -15,8 +18,11 @@ struct board
 	struct piece *pieces[32];
 	int s_pieces;
 	int currentPlayer;
-	struct piece * promotionPawn;
+	struct piece *promotionPawn;
 	int players;
+	struct player *p1;
+	struct player* p2;
+
 }board;
 
 

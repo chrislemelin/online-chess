@@ -6,7 +6,6 @@
 #include "player.h"
 #include "server.h"
 
-#define EON (char)11
 
 /*  returns -1 if list is full
  *  returns 1 if successful
@@ -128,6 +127,8 @@ void startGame(struct player * p1 , struct player * p2)
 {
   struct board * b = malloc(sizeof(struct board));
   initBoard(b);
+  b->p1 = p1;
+  b->p2 = p2;
   p1->game = b;
   p1->playerGameId = 0;
   p2->game = b;

@@ -24,9 +24,8 @@ server/player.o: server/player.c
 client/client: client/clientview.o client/display.o client/client.c client/client.h
 	$(CC) client/client.c client/clientview.o client/display.o -o client/client
 
-client/clientview.o: client/clientview.c
+client/clientview.o: client/clientview.c client/clientview.h
 	$(CC) client/clientview.c -c -o $@
 
 client/display.o: client/display.c
 	$(CC) client/display.c -c -o $@
-

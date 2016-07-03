@@ -160,7 +160,6 @@ int main(int argc, char *argv[])
 						players[a]->name = tempS;
 						char * temppy1 =playerListToString(players, s_players);
 						printf("sent message :%s:\n",temppy1 );
-						//sendMessage(players[a]->fd,'l',temppy1);
 						sendMessageAll(players,s_players,'l',temppy1);
 					}
 					else
