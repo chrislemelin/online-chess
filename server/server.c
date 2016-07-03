@@ -275,9 +275,9 @@ int main(int argc, char *argv[])
 
 				drawBoard(players[a]->game);
 
-				bzero(buffer,256);
+				//bzero(buffer,256);
 
-				t = tryMove(players[a]->game,x1,y1,x2,y2,players[a]->playerGameId);
+				t = tryMoveAdapter(players[a]->game,buffer,players[a]->playerGameId);
 	//			int t = tryMove (b,x1,y1,x2,y2,0);
 				printf("Here is ta message from player %d-%d-%d-%d %d: \n",x1,y1,x2,y2,t);
 				//sleep(5);

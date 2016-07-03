@@ -145,6 +145,30 @@ int printAllMoves(struct board * b)
 		printMoves(b->pieces[a]);
 	}
 }
+int tryMoveAdapter(struct board * b, char * s, int player)
+{
+	char x1 = s[0];
+	int x1i = (int)x1 - 97;
+	char y1 = s[1];
+	int y1i = (int)y1 - 48-1;
+
+	char x2 = s[3];
+	int x2i = (int)x2 - 97;
+	char y2 = s[4];
+	int y2i = (int)y2 - 48-1;
+
+	printf("%d,%d,%d,%d",x1i,y1i,x2i,y2i);
+	int t = tryMove(b,x1i,y1i,x2i,y2i,player);
+	return t;
+
+}
+
+
+
+
+
+
+
 
 /* returns 2 if the move caused a promotion
  * returns 1 if valid
