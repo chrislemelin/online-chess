@@ -9,6 +9,7 @@
 #include <signal.h>
 #include "clientview.h"
 #include "display.h"
+#include "instructions.h"
 
 #define EON (char)11
 
@@ -140,17 +141,31 @@ int printMessage(char * message)
 	{
 		strcpy(lastMessage, message);
 	}
-	set_cur_pos(18+DISPLAY_Y,0);
+	set_cur_pos(19+DISPLAY_Y,0);
 	printf(CLEARLINE);
-	set_cur_pos(18+DISPLAY_Y,0);
+	printf(CLEARLINE);
+	set_cur_pos(19+DISPLAY_Y,0);
   printf("%s\n", message);
 }
 int clearInput()
 {
-	set_cur_pos(19+DISPLAY_Y,0);
+	set_cur_pos(18+DISPLAY_Y,0);
 	printf(CLEARLINE);
-	set_cur_pos(19+DISPLAY_Y,0);
+	set_cur_pos(18+DISPLAY_Y,0);
 	put('~');
+}
+
+void printHelpMessage(int * inGame)
+{
+	printMessage("thing");
+	if(* inGame)
+	{
+		printMessage(man_lobbyHelp);
+	}
+	else
+	{
+		printMessage(man_gameHelp);
+	}
 }
 
 int drawLobby()

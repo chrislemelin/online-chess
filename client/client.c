@@ -12,8 +12,13 @@
 #include "clientview.h"
 #include "display.h"
 
+#define HELP "help\0"
+
 const char EOM = (char)10;
 int quit = 0;
+int displayHelp = 1;
+int needsName = 1;
+
 
 void signalHandler(int input)
 {
@@ -41,17 +46,24 @@ int run(int sockfd, fd_set readfds, int * inGame, char * lastmessage)
       n = write(sockfd,&"quit",6);
       printf("closed connection\n");
       return -1;
-
     }
     else
     {
       bzero(buffer,256);
       fgets(buffer,256,stdin);
       buffer[strlen(buffer)-1] = '\0';
-      n = write(sockfd,buffer,strlen(buffer));
-      if (n < 0)
-        error("ERROR writing to socket");
-      printMessage("");
+      if(strcmp(buffer,HELP) == 0 && !(needsName) )
+      {
+        //printMessage("this is helping");
+        printHelpMessage(inGame);
+      }
+      else
+      {
+        n = write(sockfd,buffer,strlen(buffer));
+        if (n < 0)
+          error("ERROR writing to socket");
+        printMessage("");
+      }
     }
   }
   if(FD_ISSET(sockfd,&readfds))  //    printf("Please enter the message: ");
@@ -93,7 +105,6 @@ int run(int sockfd, fd_set readfds, int * inGame, char * lastmessage)
         //drawLobby();
         if(! (*inGame))
         {
-
           drawLobby();
         }
 
@@ -107,6 +118,11 @@ int run(int sockfd, fd_set readfds, int * inGame, char * lastmessage)
       else if (token[0] == 'g')
       {
         * inGame = 1;
+      }
+      else if (token[0] == 'a')
+      {
+        needsName = 0;
+        printMessage("enter 'help' for help");
       }
       else if (token[0] == 'd')
       {
@@ -153,10 +169,6 @@ int main(int argc, char *argv[])
   serv_addr.sin_port = htons(portno);
   if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
       error("ERROR connecting");
-  /*
-  n = read(sockfd,buffer,256);
-  printf("--%s\n",buffer);
-  */
 
   fd_set readfds;
   FD_SET(fileno(stdin),&readfds);

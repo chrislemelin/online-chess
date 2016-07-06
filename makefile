@@ -21,11 +21,14 @@ $(SCHESS)piece.o: $(SCHESS)display.c
 server/player.o: server/player.c
 	$(CC) server/player.c -c -o $@
 
-client/client: client/clientview.o client/display.o client/client.c client/client.h
-	$(CC) client/client.c client/clientview.o client/display.o -o client/client
+client/client: client/clientview.o client/display.o client/client.c client/client.h client/instructions.o client/instructions.c
+	$(CC) client/client.c client/clientview.o client/display.o client/instructions.o -o client/client
 
 client/clientview.o: client/clientview.c client/clientview.h
-	$(CC) client/clientview.c -c -o $@
+	$(CC)  client/clientview.c -c -o $@
 
 client/display.o: client/display.c
 	$(CC) client/display.c -c -o $@
+
+client/instructions.o: client/instructions.c client/instructions.h
+	$(CC) client/instructions.c -c -o $@

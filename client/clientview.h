@@ -12,6 +12,6 @@ int drawBoard();
 int clearInput();
 int printMessage(char * message);
 int drawLobby();
-
+void printHelpMessage(int * inGame);
 
 #endif
