@@ -67,10 +67,6 @@ int main(int argc, char *argv[])
 	clilen = sizeof(cli_addr);
 	FD_SET(sockfd,&readfds);
 
-	//struct board * b = malloc(sizeof(struct board));
-	//initBoard(b);
-	//updateAllMoves(b);
-
 
 	while(1)
 	{
@@ -155,7 +151,7 @@ int main(int argc, char *argv[])
 					fflush(stdout);
 					if(strcmp(tempS,"") !=0 && validName(players , s_players, tempS))
 					{
-						printf("name is %s size: %d\n",tempS,strlen(buffer));
+						printf("name is %s size: %ld\n",tempS,strlen(buffer));
 
 						players[a]->name = tempS;
 						char * temppy1 =playerListToString(players, s_players);
@@ -395,6 +391,7 @@ int sendMessage(int fd, char type, char * message)
 	{
 		printf("dissconedted??\n");
 	}
+	return 0;
 }
 
 int sendMessageAll(struct player ** players, int s_players, char type, char * message)
@@ -403,4 +400,5 @@ int sendMessageAll(struct player ** players, int s_players, char type, char * me
 	{
 		sendMessage(players[a]->fd,type,message);
 	}
+	return 0;
 }

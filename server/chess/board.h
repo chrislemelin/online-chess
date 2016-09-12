@@ -38,6 +38,7 @@ char * boardToString(struct board * b);
 int whoWon(struct board * b);
 int checkPromotion(struct board * b);
 int promote(struct board * b,char c);
+int tryMoveAdapter(struct board * b, char * s, int player);
 
 
 

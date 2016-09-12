@@ -128,6 +128,7 @@ int drawBoard(char * lastmessage)
 		a++;
 	}
 	printMessage(NULL);
+	return 0;
 }
 
 int printMessage(char * message)
@@ -146,6 +147,7 @@ int printMessage(char * message)
 	printf(CLEARLINE);
 	set_cur_pos(19+DISPLAY_Y,0);
   printf("%s\n", message);
+	return 0;
 }
 int clearInput()
 {
@@ -153,6 +155,7 @@ int clearInput()
 	printf(CLEARLINE);
 	set_cur_pos(18+DISPLAY_Y,0);
 	put('~');
+	return 0;
 }
 
 void printHelpMessage(int * inGame)
@@ -164,7 +167,7 @@ void printHelpMessage(int * inGame)
 	}
 	else
 	{
-		printMessage(man_gameHelp);
+		printMessage(man_boardHelp);
 	}
 }
 
@@ -197,13 +200,16 @@ int drawLobby()
 	}
 	printf(RESET);
 	printMessage(NULL);
+	return 0;
 }
 
 int updateLobby(char * nLobby)
 {
   lobby = nLobby;
+	return 0;
 }
 int updateBoard(char * nBoard)
 {
 	board = nBoard;
+	return 0;
 }

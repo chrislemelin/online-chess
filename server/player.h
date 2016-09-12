@@ -19,6 +19,7 @@ int removePlayer(struct player ** players, int * s_players, int a);
 struct player * findPlayer(struct player ** players, int s_players,char *name );
 void startGame(struct player * p1 , struct player * p2);
 int validName (struct player ** players, int s_players,char *name);
+char* playerListToString(struct player ** players, int s_players);
 
 
 #endif

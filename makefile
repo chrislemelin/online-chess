@@ -6,10 +6,12 @@ server: server/server
 
 client: client/client
 
-server/server: $(SCHESS)board.o $(SCHESS)display.o $(SCHESS)piece.o server/player.o server/server.c server/server.h
+wrapper: wrapper/boardwrapper
+
+server/server: $(SCHESS)board.o $(SCHESS)display.o server/player.o server/server.c server/server.h
 	$(CC) $(CFLAGS) server/server.c $(SCHESS)board.o $(SCHESS)piece.o $(SCHESS)display.o server/player.o -o server/server
 
-$(SCHESS)board.o: $(SCHESS)board.c
+$(SCHESS)board.o: $(SCHESS)board.c $(SCHESS)piece.o $(SCHESS)display.o
 	$(CC) $(CFLAGS) $(SCHESS)board.c -c -o $@;
 
 $(SCHESS)display.o: $(SCHESS)display.c
@@ -32,3 +34,6 @@ client/display.o: client/display.c
 
 client/instructions.o: client/instructions.c client/instructions.h
 	$(CC) client/instructions.c -c -o $@
+
+wrapper/boardwrapper: $(SCHESS)board.o $(SCHESS)display.o wrapper/boardwrapper.c wrapper/boardwrapper.h
+	$(CC) $(CFLAGS) wrapper/boardwrapper.c $(SCHESS)board.o $(SCHESS)piece.o $(SCHESS)display.o -o wrapper/boardwrapper
