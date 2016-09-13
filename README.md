@@ -20,3 +20,9 @@ I tried to design the client and server in such a way that most of work is done 
 * 'make server' will compile the server and its depenencies
 * The client is run with the hostname and the port number as arguments.
 * The server is run with the port number as an argument.
+ 
+# To Do
+* clean up code
+* exit game when one person wins
+* more ui changes
+
