@@ -161,7 +161,7 @@ int clearInput()
 void printHelpMessage(int * inGame)
 {
 	printMessage("thing");
-	if(* inGame)
+	if(! * inGame)
 	{
 		printMessage(man_lobbyHelp);
 	}

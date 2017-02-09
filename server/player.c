@@ -23,6 +23,7 @@ int addPlayer(struct player ** players,int  * s_players, int max_players, int fd
   temp->opp = (struct player *)NULL;
   temp->playerGameId = -1;
   temp->name = "";
+  temp->challenger = (struct player *)NULL;
   /*
   for(int a = 0;a < *s_players;a++)
   {
